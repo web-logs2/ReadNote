@@ -275,7 +275,7 @@ class Solution {
 }
 ```
 
-下面是官方程序的提交结果，明显要比我的速度快了很多。应该是Java内部字符串相加的机制的原因吧。
+下面是官方程序的提交结果，明显要比我的速度快了很多。应该是Java内部字符串相加的机制的原因吧。**因为我的代码中``str=str+array[i]``这种操作非常耗时，具体可参见《Java编程思想》中字符串的相关章节。**
 
 ```
 执行结果： 通过 显示详情
@@ -909,7 +909,7 @@ class Solution {
 
 ## 我的解法 深度优先搜索
 
-拿到这道题没有想到更加有效的方法，只想起可以用深搜来暴力地寻找，应该不是比较快的方法，因为有很多重复比较的地方。很多的搜索匹配问题，在想不起更加有效的方法试，可以用深搜和广搜来当应急的方法，下面是Java程序的实现：
+拿到这道题没有想到更加有效的方法，只想起可以用深搜来暴力地寻找，应该不是比较快的方法，因为有很多重复比较的地方。很多的搜索匹配问题，在想不起更加有效的方法时，可以用深搜和广搜来当应急的方法，下面是Java程序的实现：
 
 ```java
 class Solution {
@@ -1350,3 +1350,2966 @@ n     乘积     子数字
 28      26244   2 2 3 3 3 3 3 3 3 3
 29      39366   2 3 3 3 3 3 3 3 3 3
 ```
+
+# 15 二进制中1的个数
+
+```
+@author: sdubrz
+@date: 7/16/2020 3:48:10 PM   
+难度： 简单
+考察内容： 二进制
+@e-mail: lwyz521604#163.com
+题目来自《剑指offer》 电子工业出版社
+```
+
+请实现一个函数，输入一个整数，输出该数二进制表示中 1 的个数。例如，把 9 表示成二进制是 1001，有 2 位是 1。因此，如果输入 9，则该函数输出 2。
+
+**示例 1：**
+
+```
+输入：00000000000000000000000000001011
+输出：3
+解释：输入的二进制串 00000000000000000000000000001011 中，共有三位为 '1'。
+```
+
+**示例 2：**
+
+```
+输入：00000000000000000000000010000000
+输出：1
+解释：输入的二进制串 00000000000000000000000010000000 中，共有一位为 '1'。
+```
+
+**示例 3：**
+
+```
+输入：11111111111111111111111111111101
+输出：31
+解释：输入的二进制串 11111111111111111111111111111101 中，共有 31 位为 '1'。
+```
+
+## 解法
+
+下面是网友[Satan](https://leetcode-cn.com/u/satan/)给出的解法：
+
+把一个整数减去1，再和原整数做与运算，会把该整数最右边一个1变成0.那么一个整数的二进制有多少个1，就可以进行多少次这样的操作。
+
+Java代码实现如下
+
+```java
+public class Solution {
+    // you need to treat n as an unsigned value
+    public int hammingWeight(int n) {
+        int count = 0;
+        while(n!=0){
+            count++;
+            n = n & (n-1);
+        }
+        return count;
+    }
+}
+```
+
+在 LeetCode 系统中提交的结果为
+
+```
+执行结果：通过 显示详情
+执行用时：1 ms, 在所有 Java 提交中击败了99.27%的用户
+内存消耗：36.6 MB, 在所有 Java 提交中击败了100.00%的用户
+```
+
+另：Java中的无符号右移运算符为 ``>>>``
+
+# 16 数值的整数次方
+
+```
+@author: sdubrz
+@date: 8/13/2020 16:48:23 PM   
+难度： 中等
+考察内容： 
+@e-mail: lwyz521604#163.com
+题目来自《剑指offer》 电子工业出版社
+```
+
+实现函数double Power(double base, int exponent)，求base的exponent次方。不得使用库函数，同时不需要考虑大数问题。
+
+**示例 1:**
+
+```
+输入: 2.00000, 10
+输出: 1024.00000
+```
+
+**示例 2:**
+
+```
+输入: 2.10000, 3
+输出: 9.26100
+```
+
+**示例 3:**
+
+```
+输入: 2.00000, -2
+输出: 0.25000
+解释: 2^-2 = 1/2^2 = 1/4 = 0.25
+```
+
+**说明:**
+
++ -100.0 < x < 100.0
++ n 是 32 位有符号整数，其数值范围是 [−231, 231 − 1] 。
+
+## 我的第一种解法
+
+我设计的解法是通过对指数进行分析，以达到减少乘法次数的目的的。但是提交之后显示超出内存限制。
+
+```java
+class Solution {
+    public double myPow(double x, int n) {
+        if(n==0) {
+			return 1;
+		}
+		boolean inv = false;
+		if(n<0) {
+			n = -1*n;
+			inv = true;
+		}
+		
+		ArrayList<Double> list = new ArrayList<>();
+		//ArrayList<Integer> list2 = new ArrayList<>();
+		//list.add(1.0);
+		list.add(x);
+		//list2.add(1);
+		int index = 0;  // 2的指数
+		int temp = 1;  // pow(2, index)
+		while(temp*2<=n) {
+			double current = list.get(index) * list.get(index);
+			list.add(current);
+			temp *= 2;
+			//list2.add(temp);
+			index++;
+		}
+		
+		double result = 1.0;
+		
+		while(n>0) {
+			result *= list.get(index);
+			n = n - temp;
+			while(temp>n) {
+				temp /= 2;
+				index--;
+			}
+		}
+		
+		// System.out.println(list);
+		
+		if(inv) {
+			return 1.0/result;
+		}else {
+			return result;
+		}
+    }
+}
+```
+
+提交结果显示超出内存限制。
+
+## 第二种解法 递归方式
+
+《剑指offer》书中是用的递归方式实现，可以通过提交，不过需要注意一些边界条件的处理。
+
+```java
+class Solution {
+    public double myPow(double x, int n) {
+        if(x==0.0){
+            return 0.0;
+        }
+        if(n==0){
+            return 1.0;
+        }
+
+        boolean inv = false;
+        if(n<0){
+            n = -1*n;
+            inv = true;
+        }
+
+        if(n==1){
+            if(inv)
+                return 1 / x;
+            return x;
+        }
+
+        double result = myPow(x, n/2);
+        result *= result;
+        if(n%2==1){
+            result *= x;
+        }
+
+        if(inv && result!=0.0)
+            return 1.0/result;
+
+        return result;
+    }
+}
+```
+
+在 LeetCode 系统中提交的结果为
+
+```
+执行用时：1 ms, 在所有 Java 提交中击败了94.79%的用户
+内存消耗：37.1 MB, 在所有 Java 提交中击败了37.65%的用户
+```
+
+
+
+# 18 删除链表的节点
+
+```
+@author: sdubrz
+@date: 7/25/2020 9:41:33 AM   
+难度： 简单
+考察内容： 二进制
+@e-mail: lwyz521604#163.com
+题目来自《剑指offer》 电子工业出版社
+```
+
+给定单向链表的头指针和一个要删除的节点的值，定义一个函数删除该节点。
+
+返回删除后的链表的头节点。
+
+**注意：**此题对比原题有改动
+
+**示例 1:**
+
+```
+输入: head = [4,5,1,9], val = 5
+输出: [4,1,9]
+解释: 给定你链表中值为 5 的第二个节点，那么在调用了你的函数之后，该链表应变为 4 -> 1 -> 9.
+```
+
+**示例 2:**
+
+```
+输入: head = [4,5,1,9], val = 1
+输出: [4,5,9]
+解释: 给定你链表中值为 1 的第三个节点，那么在调用了你的函数之后，该链表应变为 4 -> 5 -> 9.
+```
+
+**说明：**
+
++ 题目保证链表中节点的值互不相同
++ 若使用 C 或 C++ 语言，你不需要 free 或 delete 被删除的节点
+
+通过次数40,406提交次数68,572
+
+## 解法
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+    public ListNode deleteNode(ListNode head, int val) {
+        if(head==null) {
+			return null;
+		}
+		if(head.val==val) {
+			head = head.next;
+			return head;
+		}
+		
+		ListNode pre = head;
+		ListNode current = head.next;
+		while(current!=null) {
+			if(current.val==val) {
+				pre.next = current.next;
+				break;
+			}else {
+				pre = pre.next;
+				current = current.next;
+			}
+		}
+		
+		return head;
+		
+    }
+}
+```
+
+在LeetCode系统中提交的结果为
+
+```
+执行结果：通过 显示详情
+执行用时：0 ms, 在所有 Java 提交中击败了100.00%的用户
+内存消耗：39.4 MB, 在所有 Java 提交中击败了100.00%的用户
+```
+
+# 19 正则表达式匹配
+
+```
+@date: 8/18/2020 10:26:00 AM
+@难度: 困难
+考察内容： 字符串 动态规划
+@e-mail: lwyz521604#163.com
+题目来自《剑指offer》 电子工业出版社
+```
+
+请实现一个函数用来匹配包含``'. '``和``'*'``的正则表达式。模式中的字符``'.'``表示任意一个字符，而``'*'``表示它前面的字符可以出现任意次（含0次）。在本题中，匹配是指字符串的所有字符匹配整个模式。例如，字符串``"aaa"``与模式``"a.a"``和``"ab*ac*a"``匹配，但与``"aa.a"``和``"ab*a"``均不匹配。
+
+**示例 1:**
+
+```
+输入:
+s = "aa"
+p = "a"
+输出: false
+解释: "a" 无法匹配 "aa" 整个字符串。
+```
+
+**示例 2:**
+
+```
+输入:
+s = "aa"
+p = "a*"
+输出: true
+解释: 因为 '*' 代表可以匹配零个或多个前面的那一个元素, 在这里前面的元素就是 'a'。因此，字符串 "aa" 可被视为 'a' 重复了一次。
+```
+
+**示例 3:**
+
+```
+输入:
+s = "ab"
+p = ".*"
+输出: true
+解释: ".*" 表示可匹配零个或多个（'*'）任意字符（'.'）。
+```
+
+**示例 4:**
+
+```
+输入:
+s = "aab"
+p = "c*a*b"
+输出: true
+解释: 因为 '*' 表示零个或多个，这里 'c' 为 0 个, 'a' 被重复一次。因此可以匹配字符串 "aab"。
+```
+
+**示例 5:**
+
+```
+输入:
+s = "mississippi"
+p = "mis*is*p*."
+输出: false
+```
+
+
+
++ s 可能为空，且只包含从 a-z 的小写字母。
++ p 可能为空，且只包含从 a-z 的小写字母以及字符 . 和 *，无连续的 '*'。
+
+## 递归解法
+
+从示例来看，题目中的``.*``指的应该是任意的字符串，而不是只含有相同字符的字符串。这道题可以通过逐个判断模式字符串中前两个字符的情况，然后递归地来解:
+
+```java
+class Solution {
+    public boolean isMatch(String s, String p) {
+
+        return this.arrayMatch(s.toCharArray(), p.toCharArray(), 0, 0);
+    }
+
+    private boolean arrayMatch(char[] arrS, char[] arrP, int ptrS, int ptrP){
+        int n1 = arrS.length;
+        int n2 = arrP.length;
+
+        if(ptrP==n2){  // 模式为空时，字符串必须为空
+            return n1 == ptrS;
+        }
+
+        if(n1-ptrS==0){  // 字符串为空，模式非空时，模式必须是 某* 的形式
+            if(n2-ptrP>=2 && arrP[ptrP+1]=='*'){
+                return arrayMatch(arrS, arrP, ptrS, ptrP+2);
+            }
+            return false;
+        }
+
+        // 如果模式字符串只剩最后一个位置
+        if(n2-ptrP==1){
+            if(n1-ptrS==1){
+                if(arrP[ptrP]=='.')
+                    return true;
+                else
+                    return arrP[ptrP]==arrS[ptrS];
+            }
+            return false;
+        }
+
+        // 模式字符串还剩下两位或超过两位的情况
+        if(arrP[ptrP]=='.'){
+            if(arrP[ptrP+1]=='*'){
+                // 题目对这种情况的意思似乎是任意的字符出现任意次
+                return arrayMatch(arrS, arrP, ptrS+1, ptrP+2)
+                        || arrayMatch(arrS, arrP, ptrS, ptrP+2)
+                        || arrayMatch(arrS, arrP, ptrS+1, ptrP);
+            }else{
+                return arrayMatch(arrS, arrP, ptrS+1, ptrP+1);
+            }
+        }else{
+            if(arrP[ptrP+1]=='*'){
+                if(arrS[ptrS]==arrP[ptrP]){
+                    return arrayMatch(arrS, arrP, ptrS+1, ptrP+2)
+                            || arrayMatch(arrS, arrP, ptrS, ptrP+2)
+                            || arrayMatch(arrS, arrP, ptrS+1, ptrP);
+                }else{
+                    return arrayMatch(arrS, arrP, ptrS, ptrP+2);
+                }
+            }else{
+                if(arrS[ptrS]==arrP[ptrP]){
+                    return arrayMatch(arrS, arrP, ptrS+1, ptrP+1);
+                }else{
+                    return false;
+                }
+            }
+        }
+
+    }
+}
+```
+
+提交结果如下所示，时间效率并不高，原因应该是在递归调用中的几个“或”语句下面存在重复求解子问题的情况，因此可以用一个矩阵将这些子问题的求解结果存储下来，这样也就是动态规划方法了。
+
+```
+执行用时：846 ms, 在所有 Java 提交中击败了5.03%的用户
+内存消耗：38.3 MB, 在所有 Java 提交中击败了59.69%的用户
+```
+
+## 自上而下的动态规划解法
+
+前面已经提到，递归解法存在重复求解子问题的情况，因而可以在递归过程中增加备忘机制，使得时间效率大幅提高。《算法导论》中称这种思路为自上而下带备忘的动态规划方法。其具体实现如下，由于直接在上一个版本的基础上略加修改而成的，代码的书写不太优美，其实可以让``arrayMatch``函数变成``void``的。
+
+```java
+class Solution {
+    public boolean isMatch(String s, String p) {
+
+        int[][] count = new int[s.length()+1][p.length()+1];
+        return this.arrayMatch(s.toCharArray(), p.toCharArray(), 0, 0, count);
+
+    }
+
+    private boolean arrayMatch(char[] arrS, char[] arrP, int ptrS, int ptrP, int[][] count){
+        int n1 = arrS.length;
+        int n2 = arrP.length;
+
+        if(count[ptrS][ptrP]==1)
+            return true;
+        if(count[ptrS][ptrP]==-1)
+            return false;
+
+        if(ptrP==n2){  // 模式为空时，字符串必须为空
+            if(n1 == ptrS){
+                count[ptrS][ptrP] = 1;
+                return true;
+            }
+            count[ptrS][ptrP] = -1;
+            return false;
+        }
+
+        if(n1-ptrS==0){  // 字符串为空，模式非空时，模式必须是 某* 的形式
+            if(n2-ptrP>=2 && arrP[ptrP+1]=='*'){
+                boolean temp = arrayMatch(arrS, arrP, ptrS, ptrP+2, count);
+                if(temp)
+                    count[ptrS][ptrP] = 1;
+                else
+                    count[ptrS][ptrP] = -1;
+                return temp;
+            }
+            count[ptrS][ptrP] = -1;
+            return false;
+        }
+
+        // 如果模式字符串只剩最后一个位置
+        if(n2-ptrP==1){
+            if(n1-ptrS==1){
+                if(arrP[ptrP]=='.') {
+                    count[ptrS][ptrP] = 1;
+                    return true;
+                }else{
+                    if(arrP[ptrP]==arrS[ptrS]){
+                        count[ptrS][ptrP] = 1;
+                        return true;
+                    }
+                    count[ptrS][ptrP] = -1;
+                    return false;
+                }
+            }
+            count[ptrS][ptrP] = -1;
+            return false;
+        }
+
+        // 模式字符串还剩下两位或超过两位的情况
+        if(arrP[ptrP]=='.'){
+            if(arrP[ptrP+1]=='*'){
+                // 题目对这种情况的意思似乎是任意的字符出现任意次
+                boolean temp = arrayMatch(arrS, arrP, ptrS+1, ptrP+2, count)
+                        || arrayMatch(arrS, arrP, ptrS, ptrP+2, count)
+                        || arrayMatch(arrS, arrP, ptrS+1, ptrP, count);
+                if(temp)
+                    count[ptrS][ptrP] = 1;
+                else
+                    count[ptrS][ptrP] = -1;
+                return temp;
+            }else{
+                boolean temp = arrayMatch(arrS, arrP, ptrS+1, ptrP+1, count);
+                if(temp)
+                    count[ptrS][ptrP] = 1;
+                else
+                    count[ptrS][ptrP] = -1;
+                return temp;
+            }
+        }else{
+            if(arrP[ptrP+1]=='*'){
+                if(arrS[ptrS]==arrP[ptrP]){
+                    boolean temp = this.arrayMatch(arrS, arrP, ptrS+1, ptrP+2, count)
+                            || this.arrayMatch(arrS, arrP, ptrS, ptrP+2, count)
+                            || this.arrayMatch(arrS, arrP, ptrS+1, ptrP, count);
+                    if(temp)
+                        count[ptrS][ptrP] = 1;
+                    else
+                        count[ptrS][ptrP] = -1;
+                    return temp;
+                }else{
+                    boolean temp = arrayMatch(arrS, arrP, ptrS, ptrP+2, count);
+                    if(temp)
+                        count[ptrS][ptrP] = 1;
+                    else
+                        count[ptrS][ptrP] = -1;
+                    return temp;
+                }
+            }else{
+                if(arrS[ptrS]==arrP[ptrP]){
+                    boolean temp = arrayMatch(arrS, arrP, ptrS+1, ptrP+1, count);
+                    if(temp)
+                        count[ptrS][ptrP] = 1;
+                    else
+                        count[ptrS][ptrP] = -1;
+                    return temp;
+                }else{
+                    count[ptrS][ptrP] = -1;
+                    return false;
+                }
+            }
+        }
+
+    }
+
+}
+```
+
+在系统中提交的结果为
+
+```
+执行用时：2 ms, 在所有 Java 提交中击败了99.91%的用户
+内存消耗：39.7 MB, 在所有 Java 提交中击败了20.39%的用户
+```
+
+
+
+
+
+# 21 调整数组顺序使奇数位于偶数前面
+
+```
+@author: sdubrz
+@date: 7/25/2020 9:59:53 AM    
+难度： 简单
+考察内容： 二进制
+@e-mail: lwyz521604#163.com
+题目来自《剑指offer》 电子工业出版社
+```
+
+输入一个整数数组，实现一个函数来调整该数组中数字的顺序，使得所有奇数位于数组的前半部分，所有偶数位于数组的后半部分。
+
+**示例：**
+
+```
+输入：nums = [1,2,3,4]
+输出：[1,3,2,4] 
+注：[3,1,2,4] 也是正确的答案之一。
+```
+
+**提示：**
+
++ 1 <= nums.length <= 50000
++ 1 <= nums[i] <= 10000
+
+通过次数41,445提交次数64,453
+
+## 解法
+
+```java
+class Solution {
+    public int[] exchange(int[] nums) {
+        if(nums.length<2) {
+			return nums;
+		}
+		int pre = 0;
+		int back = nums.length-1;
+		
+		while(pre<back) {
+			while(pre<nums.length &&nums[pre]%2==1) {  // 从前往后找偶数
+				pre++;
+			}
+			while(back>=0 &&nums[back]%2==0) {  // 从后往前找奇数
+				back--;
+			}
+			
+			if(pre<back) {
+				int a = nums[pre];
+				nums[pre] = nums[back];
+				nums[back] = a;
+			}
+		}
+			
+		return nums;
+    }
+}
+```
+
+在LeetCode系统中提交的结果为
+
+```
+执行结果：通过  显示详情
+执行用时：2 ms, 在所有 Java 提交中击败了99.82%的用户
+内存消耗：47.6 MB, 在所有 Java 提交中击败了100.00%的用户
+```
+
+# 22 链表中倒数第k个节点
+
+```
+@author: sdubrz
+@date: 7/25/2020 10:11:41 AM    
+难度： 简单
+考察内容： 二进制
+@e-mail: lwyz521604#163.com
+题目来自《剑指offer》 电子工业出版社
+```
+
+输入一个链表，输出该链表中倒数第k个节点。为了符合大多数人的习惯，本题从1开始计数，即链表的尾节点是倒数第1个节点。例如，一个链表有6个节点，从头节点开始，它们的值依次是1、2、3、4、5、6。这个链表的倒数第3个节点是值为4的节点。
+
+
+**示例：**
+
+```
+给定一个链表: 1->2->3->4->5, 和 k = 2.
+
+返回链表 4->5.
+```
+
+通过次数49,771提交次数63,088
+
+## 解法 遍历两次链表
+
++ 第一次遍历获得链表的长度，计算出要返回的节点的正序位置。
++ 第二次遍历得到结果。
+
+下面是Java程序的实现
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+    public ListNode getKthFromEnd(ListNode head, int k) {
+        int n = 0;
+		ListNode current = head;
+		// 第一次遍历，获知链表长度
+		while(current!=null) {
+			n++;
+			current = current.next;
+		}
+		
+		if(k>n) {  // 链表中元素个数不够
+			return null;
+		}
+		
+		int aim = n-k+1;  // 目标节点的正序次序
+		int ptr = 1;
+		current = head;
+		// 第二次遍历到达目标节点
+		while(ptr<aim) {
+			current = current.next;
+			ptr++;
+		}
+		
+		return current;
+    }
+}
+```
+
+在 LeetCode 系统中提交的结果为
+
+```
+执行结果：通过显示详情
+执行用时：0 ms, 在所有 Java 提交中击败了100.00%的用户
+内存消耗：37.6 MB, 在所有 Java 提交中击败了100.00%的用户
+```
+
+# 24 反转链表
+
+```
+@author: sdubrz
+@date: 7/25/2020 10:46:14 AM     
+难度： 简单
+考察内容： 链表
+@e-mail: lwyz521604#163.com
+题目来自《剑指offer》 电子工业出版社
+```
+
+定义一个函数，输入一个链表的头节点，反转该链表并输出反转后链表的头节点。
+
+**示例:**
+
+```
+输入: 1->2->3->4->5->NULL
+输出: 5->4->3->2->1->NULL
+```
+
+**限制：**
+
+0 <= 节点个数 <= 5000
+
+## 解法一 栈
+
+对于颠倒顺序的问题，最容易想到的解法就是用栈来实现：
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+    public ListNode reverseList(ListNode head) {
+        if(head==null) {
+			return null;
+		}
+		if(head.next==null) {
+			return head;
+		}
+		
+		// 剩下的情况就是链表中至少有两个节点的情况
+		Stack<ListNode> stack = new Stack<>();
+		ListNode current = head;
+		while(current!=null) {
+			stack.push(current);
+			current = current.next;
+		}
+		
+		ListNode list2 = stack.pop();
+		ListNode current2 = list2;
+		while(stack.size()>1) {
+			current2.next = stack.pop();
+			current2 = current2.next;
+		}
+		ListNode lastNode = stack.pop();
+		lastNode.next = null;
+		current2.next = lastNode;
+		
+		return list2;
+    }
+}
+```
+
+但是对于链表的反转问题，栈的解法效率并不高。
+
+```
+执行结果：通过 显示详情
+执行用时：1 ms, 在所有 Java 提交中击败了6.67%的用户
+内存消耗：39.5 MB, 在所有 Java 提交中击败了100.00%的用户
+```
+
+## 解法二 一次遍历链表
+
+遍历一次链表，并在遍历的过程中改变next的指向关系，具体实现如下：
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+    public ListNode reverseList(ListNode head) {
+        if(head==null) {
+			return null;
+		}
+		if(head.next==null) {
+			return head;
+		}
+		
+		// 剩下的情况就是链表中至少有两个节点的情况
+		ListNode pre = head;  // 前一个节点
+		ListNode current = pre.next;  // 当前节点
+		pre.next = null;
+		while(current.next!=null) {
+			ListNode back = current.next;
+			current.next = pre;
+			pre = current;
+			current = back;
+		}
+		current.next = pre;
+		
+		return current;
+    }
+}
+```
+
+这种方法的效率要明显高于栈实现的版本：
+
+```
+执行结果：通过 显示详情
+执行用时：0 ms, 在所有 Java 提交中击败了100.00%的用户
+内存消耗：40 MB, 在所有 Java 提交中击败了100.00%的用户
+```
+
+# 25 合并两个排序的链表
+
+```
+@author: sdubrz
+@date: 7/25/2020 3:23:12 PM    
+难度： 简单
+考察内容： 链表
+@e-mail: lwyz521604#163.com
+题目来自《剑指offer》 电子工业出版社
+```
+
+输入两个递增排序的链表，合并这两个链表并使新链表中的节点仍然是递增排序的。
+
+**示例1：**
+
+```
+输入：1->2->4, 1->3->4
+输出：1->1->2->3->4->4
+```
+
+**限制：**
+
+0 <= 链表长度 <= 1000
+
+## 解法
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+    public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
+        if(l1==null){
+            return l2;
+        }
+        if(l2==null){
+            return l1;
+        }
+
+        ListNode head;
+        ListNode ptr1;
+        ListNode ptr2;
+        if(l1.val>l2.val){
+            head = l2;
+            ptr1 = l1;
+            ptr2 = l2.next;
+        }else{
+            head = l1;
+            ptr1 = l1.next;
+            ptr2 = l2;
+        }
+
+        ListNode current = head;
+        while(ptr1!=null && ptr2!=null){
+            if(ptr1.val>ptr2.val){
+                current.next = ptr2;
+                ptr2 = ptr2.next;
+            }else{
+                current.next = ptr1;
+                ptr1 = ptr1.next;
+            }
+            current = current.next;
+        }
+
+        if(ptr1!=null){
+            current.next = ptr1;
+        }else{
+            current.next = ptr2;
+        }
+
+        return head;
+    }
+}
+```
+
+在 LeetCode 系统中提交的结果为
+
+```
+执行结果：通过 显示详情
+执行用时：1 ms, 在所有 Java 提交中击败了99.44%的用户
+内存消耗：39.9 MB, 在所有 Java 提交中击败了100.00%的用户
+```
+
+# 26 树的子结构
+
+```
+@author: sdubrz
+@date: 7/25/2020 4:03:31 PM   
+难度： 中等
+考察内容： 树
+@e-mail: lwyz521604#163.com
+题目来自《剑指offer》 电子工业出版社
+```
+
+输入两棵二叉树A和B，判断B是不是A的子结构。(约定空树不是任意一个树的子结构)
+
+B是A的子结构， 即 A中有出现和B相同的结构和节点值。
+
+例如:
+
+```
+给定的树 A:
+
+     3
+    / \
+   4   5
+  / \
+ 1   2
+给定的树 B：
+
+   4 
+  /
+ 1
+返回 true，因为 B 与 A 的一个子树拥有相同的结构和节点值。
+```
+
+**示例 1：**
+
+```
+输入：A = [1,2,3], B = [3,1]
+输出：false
+```
+
+**示例 2：**
+
+```
+输入：A = [3,4,5,1,2], B = [4,1]
+输出：true
+```
+
+**限制：**
+
+```
+0 <= 节点个数 <= 10000
+```
+
+通过次数29,795提交次数64,231
+
+## 解法
+
+这道题做的时候需要搞清楚是判断树的子结构还是树的子树。这里是子结构，也就是说判断A中有没有一颗子树包含B，并且这颗子树可能有不属于B的其他叶子节点。
+
+这道题我的思路是首先在A中寻找与B的根节点值相等的节点，然后在判断以这个节点为根的子树中是否包含B。下面是具体的Java实现：
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+    public boolean isSubStructure(TreeNode A, TreeNode B) {
+        if(B==null || A==null){
+            return false;
+        }
+        
+        if(A.val==B.val){
+            boolean find = isSubStructureRoot(A, B);
+            if(find){
+                return true;
+            }
+        }
+
+        return isSubStructure(A.left, B) || isSubStructure(A.right, B);
+    }
+
+    // A和B树根相同的情况下，A是否含有B
+    public boolean isSubStructureRoot(TreeNode A, TreeNode B){
+        if(A==null && B!=null){
+            return false;
+        }
+        if(B==null){
+            return true;
+        }
+        if(A.val!=B.val){
+            return false;
+        }
+
+        boolean a = isSubStructureRoot(A.left, B.left);
+        if(!a){
+            return false;
+        }
+        boolean b = isSubStructureRoot(A.right, B.right);
+        if(!b){
+            return false;
+        }
+
+        return true;
+    }
+}
+```
+
+在 LeetCode 系统中提交的结果为
+
+```
+执行结果：通过 显示详情
+执行用时：0 ms, 在所有 Java 提交中击败了100.00%的用户
+内存消耗：41.5 MB, 在所有 Java 提交中击败了100.00%的用户
+```
+
+# 27 二叉树的镜像
+
+```
+@author: sdubrz
+@date: 7/25/2020 4:18:02 PM   
+难度： 简单
+考察内容： 二叉树
+@e-mail: lwyz521604#163.com
+题目来自《剑指offer》 电子工业出版社
+```
+
+请完成一个函数，输入一个二叉树，该函数输出它的镜像。
+
+例如输入：
+
+```
+     4
+   /   \
+  2     7
+ / \   / \
+1   3 6   9
+```
+
+镜像输出：
+
+```
+     4
+   /   \
+  7     2
+ / \   / \
+9   6 3   1
+```
+
+**示例 1：**
+
+```
+输入：root = [4,2,7,1,3,6,9]
+输出：[4,7,2,9,6,3,1]
+```
+
+**限制：**
+
+```
+0 <= 节点个数 <= 1000
+```
+
+## 解法
+
+这道题比较简单了，递归大法好：
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+    public TreeNode mirrorTree(TreeNode root) {
+        if(root==null){
+            return root;
+        }
+
+        TreeNode temp = root.left;
+        root.left = mirrorTree(root.right);
+        root.right = mirrorTree(temp);
+        return root;
+    }
+}
+```
+
+在 LeetCode 系统中提交的结果为
+
+```
+执行结果：通过 显示详情
+执行用时：0 ms, 在所有 Java 提交中击败了100.00%的用户
+内存消耗：37.1 MB, 在所有 Java 提交中击败了100.00%的用户
+```
+
+# 28 对称的二叉树
+
+```
+@author: sdubrz
+@date: 7/25/2020 11:53:59 PM  
+难度： 简单
+考察内容： 二叉树
+@e-mail: lwyz521604#163.com
+题目来自《剑指offer》 电子工业出版社
+```
+
+请实现一个函数，用来判断一棵二叉树是不是对称的。如果一棵二叉树和它的镜像一样，那么它是对称的。
+
+例如，二叉树`` [1,2,2,3,4,4,3]`` 是对称的。
+
+```
+    1
+   / \
+  2   2
+ / \ / \
+3  4 4  3
+```
+
+但是下面这个 ``[1,2,2,null,3,null,3]`` 则不是镜像对称的:
+
+```
+    1
+   / \
+  2   2
+   \   \
+   3    3
+```
+
+
+**示例 1：**
+
+```
+输入：root = [1,2,2,3,4,4,3]
+输出：true
+```
+
+**示例 2：**
+
+```
+输入：root = [1,2,2,null,3,null,3]
+输出：false
+```
+
+**限制：**
+
++ 0 <= 节点个数 <= 1000
+
+## 解法
+
+对于这道题，当二叉树的根节点非空时，我们只需要判断根节点的左子树和右子树是否对称就可以了。而当这两个子树都不为空时，只需要判断左子树的左子树与右子树的右子树是否对称，以及左子树的右子树和右子树的左子树是否对称就可以了。如此，是一个递归的过程。
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+    public boolean isSymmetric(TreeNode root) {
+        if(root==null){
+            return true;
+        }
+        if(root.left==null && root.right==null){
+            return true;
+        }
+
+        return isSymmetric(root.left, root.right);
+    }
+
+    // 判断两颗子树是不是对称的
+    public boolean isSymmetric(TreeNode leftTree, TreeNode rightTree){
+        if(leftTree==null && rightTree==null){
+            return true;
+        }
+        if(leftTree==null || rightTree==null){
+            return false;
+        }
+        if(leftTree.val != rightTree.val){
+            return false;
+        }
+
+        return isSymmetric(leftTree.left, rightTree.right) && isSymmetric(leftTree.right, rightTree.left);
+
+    }
+}
+```
+
+在 LeetCode 系统中提交的结果为
+
+```
+执行结果：通过 显示详情
+执行用时：0 ms, 在所有 Java 提交中击败了100.00%的用户
+内存消耗：38 MB, 在所有 Java 提交中击败了100.00%的用户
+```
+
+# 29 顺时针打印矩阵
+
+```
+@author: sdubrz
+@date:  7/31/2020 10:50:03 AM 
+难度： 简单
+考察内容： 矩阵
+@e-mail: lwyz521604#163.com
+题目来自《剑指offer》 电子工业出版社
+```
+
+输入一个矩阵，按照从外向里以顺时针的顺序依次打印出每一个数字。
+
+
+**示例 1：**
+
+```
+输入：matrix = [[1,2,3],[4,5,6],[7,8,9]]
+输出：[1,2,3,6,9,8,7,4,5]
+```
+
+**示例 2：**
+
+```
+输入：matrix = [[1,2,3,4],[5,6,7,8],[9,10,11,12]]
+输出：[1,2,3,4,8,12,11,10,9,5,6,7]
+```
+
+**限制：**
+
++ 0 <= matrix.length <= 100
++ 0 <= matrix[i].length <= 100
+
+## 解法
+
+可以螺旋式的一层一层剥皮：
+
+```java
+class Solution {
+    public int[] spiralOrder(int[][] matrix) {
+        
+        int n = matrix.length;
+		if(n==0) {
+			return new int[0];
+		}
+		int m = matrix[0].length;
+		
+        int[] result = new int[n*m];
+        int direct = 1;  // 1:left, 2:down, 3:left, 4:right
+        
+        int count = 0;
+        // int start = 0;
+        int n_loop = Math.min((n+1)/2, (m+1)/2);
+        for(int start=0; start<n_loop; start++) {   
+        	// 一圈的上面一行
+        	for(int i=start; i<m-start; i++) {
+        		result[count] = matrix[start][i];
+        		count++;
+        	}
+        	if(count>=n*m) {
+        		break;
+        	}
+        	// 右边一列
+        	for(int i=start+1; i<n-start-1; i++) {
+        		result[count] = matrix[i][m-start-1];
+        		count++;
+        	}
+        	if(count>=n*m) {
+        		break;
+        	}
+        	// 下边一行
+        	for(int i=m-start-1; i>=start; i--) {
+        		result[count] = matrix[n-start-1][i];
+        		count++;
+        	}
+        	if(count>=n*m) {
+        		break;
+        	}
+        	// 左边一列
+        	for(int i=n-start-2; i>start; i--) {
+        		result[count] = matrix[i][start];
+        		count++;
+        	}
+            if(count>=n*m) {
+        		break;
+        	}
+        	
+        }
+        
+        return result;
+
+    }
+}
+```
+
+在 LeetCode 系统中提交的结果为
+
+```
+执行结果：通过 显示详情
+执行用时：1 ms, 在所有 Java 提交中击败了97.04%的用户
+内存消耗：40.9 MB, 在所有 Java 提交中击败了72.20%的用户
+```
+
+# 30 包含min函数的栈
+
+```
+@author: sdubrz
+@date:  8/1/2020 10:48:07 PM 
+难度： 简单
+考察内容： 栈
+@e-mail: lwyz521604#163.com
+题目来自《剑指offer》 电子工业出版社
+```
+
+定义栈的数据结构，请在该类型中实现一个能够得到栈的最小元素的 min 函数在该栈中，调用 min、push 及 pop 的时间复杂度都是 O(1)。
+
+**示例:**
+
+```
+MinStack minStack = new MinStack();
+minStack.push(-2);
+minStack.push(0);
+minStack.push(-3);
+minStack.min();   --> 返回 -3.
+minStack.pop();
+minStack.top();      --> 返回 0.
+minStack.min();   --> 返回 -2.
+```
+
+**提示：**
+
++ 各函数的调用总次数不超过 20000 次
+
+## 解法
+
+可以用两个栈实现，第一个栈用于正常存储数据，第二个栈依次存储当前遇到的最小值。下面是具体的Java程序实现：
+
+```java
+import java.util.*;
+
+class MinStack {
+    Stack<Integer> stack1;
+    Stack<Integer> stack2;
+    
+    /** initialize your data structure here. */
+    public MinStack() {
+        stack1 = new Stack<>();
+        stack2 = new Stack<>();
+    }
+    
+    public void push(int x) {
+        stack1.push(x);
+        if(stack2.isEmpty() || stack2.peek()>=x){
+            stack2.push(x);
+        }
+    }
+    
+    public void pop() {
+        int temp = stack1.pop();
+        if(temp==stack2.peek()){
+            stack2.pop();
+        }
+    }
+    
+    public int top() {
+        return stack1.peek();
+    }
+    
+    public int min() {
+        return stack2.peek();
+    }
+}
+
+/**
+ * Your MinStack object will be instantiated and called as such:
+ * MinStack obj = new MinStack();
+ * obj.push(x);
+ * obj.pop();
+ * int param_3 = obj.top();
+ * int param_4 = obj.min();
+ */
+```
+
+在 LeetCode 系统中提交的结果为
+
+```
+执行结果：通过显示详情
+执行用时：19 ms, 在所有 Java 提交中击败了85.82%的用户
+内存消耗：41.5 MB, 在所有 Java 提交中击败了85.80%的用户
+```
+
+# 31 栈的压入、弹出序列
+
+```
+@author: sdubrz
+@date:  8/2/2020 9:02:57 AM 
+难度： 中等
+考察内容： 栈
+@e-mail: lwyz521604#163.com
+题目来自《剑指offer》 电子工业出版社
+```
+
+输入两个整数序列，第一个序列表示栈的压入顺序，请判断第二个序列是否为该栈的弹出顺序。假设压入栈的所有数字均不相等。例如，序列 {1,2,3,4,5} 是某栈的压栈序列，序列 {4,5,3,2,1} 是该压栈序列对应的一个弹出序列，但 {4,3,5,1,2} 就不可能是该压栈序列的弹出序列。
+
+
+**示例 1：**
+
+```
+输入：pushed = [1,2,3,4,5], popped = [4,5,3,2,1]
+输出：true
+解释：我们可以按以下顺序执行：
+push(1), push(2), push(3), push(4), pop() -> 4,
+push(5), pop() -> 5, pop() -> 3, pop() -> 2, pop() -> 1
+```
+
+**示例 2：**
+
+```
+输入：pushed = [1,2,3,4,5], popped = [4,3,5,1,2]
+输出：false
+解释：1 不能在 2 之前弹出。
+```
+
+**提示：**
+
++ 0 <= pushed.length == popped.length <= 1000
++ 0 <= pushed[i], popped[i] < 1000
++ pushed 是 popped 的排列。
+
+
+# 解法
+
+最容易想到的解决方法就是用一个真实的栈来进行测试。时间复杂度是 ``O(n)`` 的。
+
+```java
+class Solution {
+    public boolean validateStackSequences(int[] pushed, int[] popped) {
+        int n = pushed.length;
+		int index2 = 0;
+		
+		Stack<Integer> stack = new Stack<>();
+		for(int i=0; i<n; i++) {
+			stack.push(pushed[i]);
+			while(index2<n && (!stack.isEmpty()) && stack.peek()==popped[index2]) {
+				stack.pop();
+				index2++;
+			}
+		}
+		
+		if(stack.isEmpty()) {
+			return true;
+		}else {
+			return false;
+		}
+    }
+}
+```
+
+在 LeetCode 系统中提交的结果为
+
+```
+执行结果：通过显示详情
+执行用时：3 ms, 在所有 Java 提交中击败了82.39%的用户
+内存消耗：39.6 MB, 在所有 Java 提交中击败了12.36%的用户
+```
+
+# 32 从上到下打印二叉树
+
+```
+@author: sdubrz
+@date:  8/2/2020 9:24:21 AM  
+难度： 中等
+考察内容： 二叉树
+@e-mail: lwyz521604#163.com
+题目来自《剑指offer》 电子工业出版社
+```
+
+从上到下打印出二叉树的每个节点，同一层的节点按照从左到右的顺序打印。
+
+
+例如:
+给定二叉树: [3,9,20,null,null,15,7],
+
+```
+    3
+   / \
+  9  20
+    /  \
+   15   7
+```
+
+返回：
+
+```
+[3,9,20,15,7]
+```
+
+**提示：**
+
+```
+节点总数 <= 1000
+```
+
+## 解法
+
+这个问题其实是一个广度优先搜索，可以用一个队列来实现：
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+    public int[] levelOrder(TreeNode root) {
+        if(root==null) {
+			return new int[0];
+		}
+		Queue<TreeNode> queue = new LinkedList<>();
+		ArrayList<Integer> list = new ArrayList<>();
+		queue.add(root);
+		
+		while(!queue.isEmpty()) {
+			TreeNode current = queue.poll();
+			list.add(current.val);
+			if(current.left!=null) {
+				queue.add(current.left);
+			}
+			if(current.right!=null) {
+				queue.add(current.right);
+			}
+		}
+		
+		int[] result = new int[list.size()];
+		Iterator<Integer> iter = list.iterator();
+		int index = 0;
+		while(iter.hasNext()) {
+			result[index] = (int) iter.next();
+			index++;
+		}
+		return result;
+    }
+}
+```
+
+在 LeetCode 系统中提交的结果为
+
+```
+执行结果：通过 显示详情
+执行用时：1 ms, 在所有 Java 提交中击败了99.65%的用户
+内存消耗：40 MB, 在所有 Java 提交中击败了35.23%的用户
+```
+
+# 32 从上到下打印二叉树II
+
+```
+@author: sdubrz
+@date:  8/2/2020 9:42:54 AM  
+难度： 简单
+考察内容： 二叉树
+@e-mail: lwyz521604#163.com
+题目来自《剑指offer》 电子工业出版社
+```
+
+从上到下按层打印二叉树，同一层的节点按从左到右的顺序打印，每一层打印到一行。
+
+例如:
+给定二叉树: [3,9,20,null,null,15,7],
+
+```
+    3
+   / \
+  9  20
+    /  \
+   15   7
+```
+
+返回其层次遍历结果：
+
+```
+[
+  [3],
+  [9,20],
+  [15,7]
+]
+```
+
+**提示：**
+
++ 节点总数 <= 1000
+
+## 解法
+
+这道题似乎比上一题要麻烦一点点，但不知道什么原因，LeetCode把上一题标记成中等难度，这道题简单难度。
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+    public List<List<Integer>> levelOrder(TreeNode root) {
+        List<List<Integer>> list = new LinkedList<>();
+		if(root==null) {
+			return list;
+		}
+		
+		LinkedList<TreeNode> currentList = new LinkedList<>();
+		currentList.add(root);
+		while(!currentList.isEmpty()) {
+			Iterator<TreeNode> iter = currentList.iterator();
+			LinkedList<TreeNode> nextList = new LinkedList<>();
+			// int[] currentArray = new int[currentList.size()];
+			List<Integer> subList = new LinkedList<>();
+			int index = 0;
+			while(iter.hasNext()) {
+				TreeNode current = iter.next();
+				subList.add(current.val);
+				if(current.left!=null) {
+					nextList.add(current.left);
+				}
+				if(current.right!=null) {
+					nextList.add(current.right);
+				}
+			}
+			list.add(subList);
+			currentList = nextList;
+		}
+		
+		return list;
+    }
+}
+```
+
+在 LeetCode 系统中提交的结果为
+
+```
+执行结果：通过 显示详情
+执行用时：1 ms, 在所有 Java 提交中击败了93.41%的用户
+内存消耗：39.9 MB, 在所有 Java 提交中击败了60.66%的用户
+```
+
+# 33 二叉搜索树的后序遍历序列
+
+
+```
+@author: sdubrz
+@date:  8/2/2020 10:46:58 AM  
+难度： 中等
+考察内容： 二叉搜索树
+@e-mail: lwyz521604#163.com
+题目来自《剑指offer》 电子工业出版社
+```
+
+输入一个整数数组，判断该数组是不是某二叉搜索树的后序遍历结果。如果是则返回 true，否则返回 false。假设输入的数组的任意两个数字都互不相同。
+
+参考以下这颗二叉搜索树：
+
+```
+     5
+    / \
+   2   6
+  / \
+ 1   3
+```
+
+**示例 1：**
+
+```
+输入: [1,6,3,2,5]
+输出: false
+```
+
+**示例 2：**
+
+```
+输入: [1,3,2,6,5]
+输出: true
+```
+
+**提示：**
+
++ 数组长度 <= 1000
+
+通过次数25,327 提交次数48,585
+
+## 解法
+
+二叉搜索树的后序遍历数组中可以分为三部分：
+
++ 第一部分位于最左侧，是二叉搜索树根节点的左子树的元素，所有的元素都小于根节点。该部分可能为空。
++ 第二部分位于第一部分的左侧，是二叉搜索树根节点的右子树中的所有元素，均大于根节点。该部分可能为空。
++ 第三部分是最后一个元素，也就是二叉搜索树的根节点元素。
+
+所以，这道题类似于快速排序中的思想，只需要判断给定的数组中，所有比根节点小的元素均位于比根节点大的元素的左侧就可以了。用递归的思想来做，时间复杂度为 ``O(nlog(n))``。需要注意的是，当数组中的元素不足3个的时候，一定是某个二叉搜索树的后序遍历。以下是具体的Java程序实现：
+
+```java
+class Solution {
+    public boolean verifyPostorder(int[] postorder) {
+		int n = postorder.length;
+		if(n<3) {
+			return true; 
+		}
+		
+		return verifyPostorder(postorder, 0, n-1);
+    }
+	
+	private boolean verifyPostorder(int[] postorder, int head, int tail) {
+		if(tail-head<2) {
+			return true;
+		}
+		
+		int ptr1 = head-1; 
+		int ptr2 = tail;
+		while(ptr1+1<tail && postorder[ptr1+1]<postorder[tail]) {
+			ptr1++;
+		}
+		while(ptr2-1>=head && postorder[ptr2-1]>postorder[tail]) {
+			ptr2--;
+		}
+		
+		if(ptr1==ptr2-1) {
+			return verifyPostorder(postorder, head, ptr1) && verifyPostorder(postorder, ptr2, tail-1);
+		}else {
+			return false;
+		}
+	}
+}
+```
+
+在 LeetCode 系统中提交的结果为
+
+```
+执行结果：通过 显示详情
+执行用时：0 ms, 在所有 Java 提交中击败了100.00%的用户
+内存消耗：37.2 MB, 在所有 Java 提交中击败了34.81%的用户
+```
+
+# 34 二叉树中和为某一值的路径
+
+```
+@author: sdubrz
+@date:  8/2/2020 2:54:10 PM   
+难度： 中等
+考察内容： 二叉树
+@e-mail: lwyz521604#163.com
+题目来自《剑指offer》 电子工业出版社
+```
+
+输入一棵二叉树和一个整数，打印出二叉树中节点值的和为输入整数的所有路径。从树的根节点开始往下一直到叶节点所经过的节点形成一条路径。
+
+**示例:**
+给定如下二叉树，以及目标和 sum = 22，
+
+```
+              5
+             / \
+            4   8
+           /   / \
+          11  13  4
+         /  \    / \
+        7    2  5   1
+```
+
+返回:
+
+```
+[
+   [5,4,11,2],
+   [5,8,4,5]
+]
+```
+
+**提示：**
+
++ 节点总数 <= 10000
+
+## 解法
+
+判断以 root 节点为根的二叉树中是否有和为 sum 的路径，就是判断 root 的左子树和右子树中是否有和为 sum-root.val 的路径。根据这一思路，可以写出递归的实现：
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+    public List<List<Integer>> pathSum(TreeNode root, int sum) {
+        List<List<Integer>> list = new LinkedList<>();
+		if(root==null) {
+			return list;
+		}
+		
+		if(root.val==sum && root.left==null && root.right==null) {
+			List<Integer> tempList = new LinkedList<>();
+			tempList.add(root.val);
+			list.add(tempList);
+			return list;
+		}
+		
+		if(root.left!=null) {
+			List<List<Integer>> leftList = pathSum(root.left, sum-root.val);
+			Iterator<List<Integer>> iter = leftList.iterator();
+			while(iter.hasNext()) {
+				List<Integer> tempList = iter.next();
+				tempList.add(0, root.val);
+                list.add(tempList);
+			}
+		}
+		if(root.right!=null) {
+			List<List<Integer>> rightList = pathSum(root.right, sum-root.val);
+			Iterator<List<Integer>> iter = rightList.iterator();
+			while(iter.hasNext()) {
+				List<Integer> tempList = iter.next();
+				tempList.add(0, root.val);
+                list.add(tempList);
+			}
+		}
+		
+		
+		return list;
+    }
+}
+```
+
+在 LeetCode 系统中提交的结果为
+
+```
+执行结果：通过 显示详情
+执行用时：2 ms, 在所有 Java 提交中击败了37.96%的用户
+内存消耗：40 MB, 在所有 Java 提交中击败了72.31%的用户
+```
+
+# 35 复杂链表的复制
+
+```
+@author: sdubrz
+@date:  8/2/2020 3:22:32 PM   
+难度： 中等
+考察内容： 链表
+@e-mail: lwyz521604#163.com
+题目来自《剑指offer》 电子工业出版社，图片来自LeetCode
+```
+
+请实现 copyRandomList 函数，复制一个复杂链表。在复杂链表中，每个节点除了有一个 next 指针指向下一个节点，还有一个 random 指针指向链表中的任意节点或者 null。
+
+**示例 1：**
+
+![](E:/会读书/放在GitHub的读书笔记/ReadNote/LeetCode/剑指offer/images/35_1.png)
+
+```
+输入：head = [[7,null],[13,0],[11,4],[10,2],[1,0]]
+输出：[[7,null],[13,0],[11,4],[10,2],[1,0]]
+```
+
+**示例 2：**
+
+![](E:/会读书/放在GitHub的读书笔记/ReadNote/LeetCode/剑指offer/images/35_2.png)
+
+```
+输入：head = [[1,1],[2,1]]
+输出：[[1,1],[2,1]]
+```
+
+**示例 3：**
+
+![](E:/会读书/放在GitHub的读书笔记/ReadNote/LeetCode/剑指offer/images/35_3.png)
+
+```
+输入：head = [[3,null],[3,0],[3,null]]
+输出：[[3,null],[3,0],[3,null]]
+```
+
+**示例 4：**
+
+```
+输入：head = []
+输出：[]
+解释：给定的链表为空（空指针），因此返回 null。
+```
+
+**提示：**
+
++ -10000 <= Node.val <= 10000
++ Node.random 为空（null）或指向链表中的节点。
++ 节点数目不超过 1000 。
+
+## 一个错误的解法
+
+先根据每个节点的 next 信息，复制所有的节点，然后根据节点的值逐个确定其 random 信息。这是一个时间复杂度为 ``O(n2)`` 的方法，并且当节点的取值存在重复时，无法正确确定每个节点的random信息。这是我第一时间想到的方法，提交之后运行结果错误。
+
+```java
+/*
+// Definition for a Node.
+class Node {
+    int val;
+    Node next;
+    Node random;
+
+    public Node(int val) {
+        this.val = val;
+        this.next = null;
+        this.random = null;
+    }
+}
+*/
+class Solution {
+    public Node copyRandomList(Node head) {
+        if(head==null) {
+        	return null;
+        }
+        
+        Node headNode = new Node(head.val);
+        Node current = headNode;
+        Node ptrNode = head.next;
+        while(ptrNode!=null) {
+        	Node temp = new Node(ptrNode.val);
+        	current.next = temp;
+        	current = current.next;
+        	ptrNode = ptrNode.next;
+        }
+        
+        current = headNode;
+        ptrNode = head;
+        while(current!=null) {
+        	if(ptrNode.random==null) {
+        		ptrNode = ptrNode.next;
+        		current = current.next;
+        		continue;
+        	}
+        	
+        	Node temp = headNode;
+        	while(temp.val!=ptrNode.random.val) {
+        		temp = temp.next;
+        	}
+        	current.random = temp;
+        	ptrNode = ptrNode.next;
+        	current = current.next;
+        }
+        
+        return headNode;
+    }
+}
+```
+
+## 第二种方法 借助Map
+
+我想到的第二种思路是将两个链表上相同位置上的节点建立映射关系，可以用HashMap帮助实现：
+
+```java
+/*
+// Definition for a Node.
+class Node {
+    int val;
+    Node next;
+    Node random;
+
+    public Node(int val) {
+        this.val = val;
+        this.next = null;
+        this.random = null;
+    }
+}
+*/
+class Solution {
+    public Node copyRandomList(Node head) {
+        if(head==null) {
+        	return null;
+        }
+		
+		HashMap<Node, Node> map = new HashMap<>();
+		
+		Node headNode = new Node(head.val);
+		map.put(head, headNode);
+		Node current = headNode;
+        Node ptrNode = head.next;
+        while(ptrNode!=null) {
+        	Node temp = new Node(ptrNode.val);
+        	current.next = temp;
+        	map.put(ptrNode, temp);
+        	current = current.next;
+        	ptrNode = ptrNode.next;
+        }
+        
+        current = headNode;
+        ptrNode = head;
+        while(current!=null) {
+        	if(ptrNode.random!=null) {
+        		current.random = map.get(ptrNode.random);
+        	}
+        	current = current.next;
+        	ptrNode = ptrNode.next;
+        }
+        
+        return headNode;
+    }
+}
+```
+
+在 LeetCode 系统中提交的结果为
+
+```
+执行结果：通过 显示详情
+执行用时：0 ms, 在所有 Java 提交中击败了100.00%的用户
+内存消耗：39.3 MB, 在所有 Java 提交中击败了88.41%的用户
+```
+
+# 36 二叉搜索树与双向链表
+
+
+```
+@author: sdubrz
+@date:  8/3/2020 4:22:22 PM  
+难度： 中等
+考察内容： 二叉搜索树 链表
+@e-mail: lwyz521604#163.com
+题目来自《剑指offer》 电子工业出版社，图片来自LeetCode
+```
+
+输入一棵二叉搜索树，将该二叉搜索树转换成一个排序的循环双向链表。要求不能创建任何新的节点，只能调整树中节点指针的指向。
+
+为了让您更好地理解问题，以下面的二叉搜索树为例：
+
+![](E:/会读书/放在GitHub的读书笔记/ReadNote/LeetCode/剑指offer/images/36_1.png)
+
+我们希望将这个二叉搜索树转化为双向循环链表。链表中的每个节点都有一个前驱和后继指针。对于双向循环链表，第一个节点的前驱是最后一个节点，最后一个节点的后继是第一个节点。
+
+下图展示了上面的二叉搜索树转化成的链表。“head” 表示指向链表中有最小元素的节点。
+
+![](E:/会读书/放在GitHub的读书笔记/ReadNote/LeetCode/剑指offer/images/36_2.png)
+
+特别地，我们希望可以就地完成转换操作。当转化完成以后，树中节点的左指针需要指向前驱，树中节点的右指针需要指向后继。还需要返回链表中的第一个节点的指针。
+
+## 解法
+
+一种比较容易理解的思路是使用递归。在得到左子树的链表与右子树的链表之后将其与根节点合并。下面是具体的Java程序实现：
+
+```java
+/*
+// Definition for a Node.
+class Node {
+    public int val;
+    public Node left;
+    public Node right;
+
+    public Node() {}
+
+    public Node(int _val) {
+        val = _val;
+    }
+
+    public Node(int _val,Node _left,Node _right) {
+        val = _val;
+        left = _left;
+        right = _right;
+    }
+};
+*/
+class Solution {
+    public Node treeToDoublyList(Node root) {
+		if(root==null) {
+        	return null;
+        }
+        
+        //System.out.println("根节点为 "+root.val);
+        
+        if(root.left==null && root.right==null) {
+        	root.left = root;
+        	root.right = root;
+        	return root;
+        }
+        
+        return treeToDoublyList0(root);
+	}
+	
+	public Node treeToDoublyList0(Node root) {
+        if(root==null) {
+        	return null;
+        }
+        
+        //System.out.println("根节点为 "+root.val);
+        
+        if(root.left==null && root.right==null) {
+        	return root;
+        }
+        
+        Node leftHead = null;
+        Node rightHead = null;
+        if(root.left!=null) {
+        	leftHead = treeToDoublyList(root.left);
+        }
+        if(root.right!=null) {
+        	rightHead = treeToDoublyList(root.right);
+        }
+        
+        root.left = null;
+        root.right = null;
+        Node head = root;
+        if(leftHead!=null) {
+        	if(leftHead.left!=null) {  // 不是叶子节点
+        		Node tempNode = leftHead.left;
+        		leftHead.left = root;
+        		root.left = tempNode;
+        		root.right = leftHead;
+        		tempNode.right = root;
+        	}else {  // 叶子节点
+        		leftHead.left = root;
+        		leftHead.right = root;
+        		root.left = leftHead;
+        		root.right = leftHead;
+        	}
+        	head = leftHead;
+        }
+        
+//        System.out.println("根节点为 "+root.val+" 时，加上左子树的结果");
+//        printList(head);
+        
+        if(rightHead!=null) {
+        	if(head.right==null) {  // 左子树为空
+        		if(rightHead.left!=null) {  // 不是叶子节点
+        			Node tempNode = rightHead.left;
+        			rightHead.left = head;
+        			head.right = rightHead;
+        			head.left = tempNode;
+        			tempNode.right = head;
+        		}else {  // 是叶子节点
+        			head.right = rightHead;
+        			head.left = rightHead;
+        			rightHead.left = head;
+        			rightHead.right = head;
+        		}
+        	}else {  // 左子树不为空
+        		if(rightHead.left!=null) {  // 不是叶子节点
+        			Node tempNode1 = head.left;
+        			Node tempNode2 = rightHead.left;
+        			head.left = tempNode2;
+        			rightHead.left = tempNode1;
+        			tempNode1.right = rightHead;
+        			tempNode2.right = head;
+        			//System.out.println("RightHead = "+rightHead.val);
+        		}else {  // 是叶子节点
+        			Node tempNode = head.left;
+        			head.left = rightHead;
+        			rightHead.right = head;
+        			rightHead.left = tempNode;
+        			tempNode.right = rightHead;
+        			//System.out.println("rightHead = "+rightHead.val);
+        		}
+        	}
+        }
+        
+//        System.out.println("根节点为 "+root.val+" 时，加上右子树的结果");
+//        printList(head);
+        
+        return head;
+    }
+}
+```
+
+下面是在LeetCode系统中提交的结果
+
+```
+执行结果：通过 显示详情
+执行用时：1 ms, 在所有 Java 提交中击败了18.34%的用户
+内存消耗：39.6 MB, 在所有 Java 提交中击败了11.89%的用户
+```
+
+这个方法效率不高，其实中序遍历是更好的实现思路。
+
+# 37 序列化二叉树
+
+```
+@author: sdubrz
+@date:  8/3/2020 6:47:45 PM  
+难度： 困难
+考察内容： 二叉树，字符串
+@e-mail: lwyz521604#163.com
+题目来自《剑指offer》 电子工业出版社，图片来自LeetCode
+```
+
+请实现两个函数，分别用来序列化和反序列化二叉树。
+
+**示例:** 
+
+```
+你可以将以下二叉树：
+
+    1
+   / \
+  2   3
+     / \
+    4   5
+
+序列化为 "[1,2,3,null,null,4,5]"
+```
+
+## 我的解法
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+public class Codec {
+
+    // Encodes a tree to a single string.
+    public String serialize(TreeNode root) {
+        // 需要先得知树的层数
+    	if(root==null) {
+    		return "[]";
+    	}
+    	Queue<TreeNode> queue1 = new LinkedList<>();
+    	queue1.add(root);
+    	int level = 0;
+    	while(!queue1.isEmpty()) {
+    		Queue<TreeNode> queue2 = new LinkedList<>();
+    		while(!queue1.isEmpty()) {
+    			TreeNode current = queue1.poll();
+    			if(current.left!=null) {
+    				queue2.add(current.left);
+    			}
+    			if(current.right!=null) {
+    				queue2.add(current.right);
+    			}
+    		}
+    		queue1 = queue2;
+    		level++;
+    	}
+    	
+    	int n = (int) Math.pow(2, level) - 1;
+    	int[] nums = new int[n];
+    	int[] labels = new int[n];
+    	
+    	serialize(root, nums, labels, 0);
+    	String data = "[";
+    	for(int i=0; i<n-1; i++) {
+    		if(labels[i]==1) {
+    			data = data + nums[i] + ",";
+    		}else {
+    			data = data + "null" + ",";
+    		}
+    	}
+    	if(labels[n-1]==1) {
+    		data = data + nums[n-1];
+    	}else {
+    		data = data + "null";
+    	}
+    	data = data + "]";
+    	
+    	
+    	return data;
+    }
+    
+    private void serialize(TreeNode root, int[] nums, int[] labels, int index) {
+    	if(root==null) {
+    		return;
+    	}
+    	
+    	nums[index] = root.val;
+    	labels[index] = 1;
+    	
+    	int leftIndex = index*2+1;
+    	int rightIndex = index*2+2;
+    	if(leftIndex<nums.length && root.left!=null) {
+    		serialize(root.left, nums, labels, leftIndex);
+    	}
+    	if(rightIndex<nums.length && root.right!=null) {
+    		serialize(root.right, nums, labels, rightIndex);
+    	}
+    }
+
+    // Decodes your encoded data to tree.
+    public TreeNode deserialize(String data) {
+    	if(data.length()<3) {
+    		return null;
+    	}
+    	String str = data.substring(1, data.length()-1);
+    	String[] items = str.split(",");
+    	int n = items.length;
+    	int[] nums = new int[n];
+    	int[] labels = new int[n];
+    	for(int i=0; i<n; i++) {
+    		if(!items[i].equals("null")) {
+    			nums[i] = Integer.parseInt(items[i]);
+    			labels[i] = 1;
+    		}
+    	}
+    	
+    	if(labels[0]!=1) {
+    		return null;
+    	}
+    	
+    	TreeNode root = new TreeNode(nums[0]);
+    	root.left = getLeft(nums, labels, 0);
+    	root.right = getRight(nums, labels, 0);
+    	
+        return root;
+    }
+    
+    // 生成左孩子
+    private TreeNode getLeft(int[] nums, int[] labels, int index) {
+    	int leftIndex = index*2+1;
+    	if(leftIndex>=nums.length || labels[leftIndex]==0) {
+    		return null;
+    	}
+    	
+    	TreeNode root = new TreeNode(nums[leftIndex]);
+    	root.left = getLeft(nums, labels, leftIndex);
+    	root.right = getRight(nums, labels, leftIndex);
+    	return root;
+    }
+    
+    // 生成右孩子
+    private TreeNode getRight(int[] nums, int[] labels, int index) {
+    	int rightIndex = index*2+2;
+    	if(rightIndex>=nums.length || labels[rightIndex]==0) {
+    		return null;
+    	}
+    	
+    	TreeNode root = new TreeNode(nums[rightIndex]);
+    	root.left = getLeft(nums, labels, rightIndex);
+    	root.right = getRight(nums, labels, rightIndex);
+    	return root;
+    }
+}
+
+// Your Codec object will be instantiated and called as such:
+// Codec codec = new Codec();
+// codec.deserialize(codec.serialize(root));
+```
+
+提交后结果显示超时。
+
+## 网友的解法
+
+```java
+public class Codec {
+    public String serialize(TreeNode root) {
+        if(root == null) return "[]";
+        StringBuilder res = new StringBuilder("[");
+        Queue<TreeNode> queue = new LinkedList<>() {{ add(root); }};
+        while(!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            if(node != null) {
+                res.append(node.val + ",");
+                queue.add(node.left);
+                queue.add(node.right);
+            }
+            else res.append("null,");
+        }
+        res.deleteCharAt(res.length() - 1);
+        res.append("]");
+        return res.toString();
+    }
+
+    public TreeNode deserialize(String data) {
+        if(data.equals("[]")) return null;
+        String[] vals = data.substring(1, data.length() - 1).split(",");
+        TreeNode root = new TreeNode(Integer.parseInt(vals[0]));
+        Queue<TreeNode> queue = new LinkedList<>() {{ add(root); }};
+        int i = 1;
+        while(!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            if(!vals[i].equals("null")) {
+                node.left = new TreeNode(Integer.parseInt(vals[i]));
+                queue.add(node.left);
+            }
+            i++;
+            if(!vals[i].equals("null")) {
+                node.right = new TreeNode(Integer.parseInt(vals[i]));
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+}
+
+作者：jyd
+链接：https://leetcode-cn.com/problems/xu-lie-hua-er-cha-shu-lcof/solution/mian-shi-ti-37-xu-lie-hua-er-cha-shu-ceng-xu-bian-/
+来源：力扣（LeetCode）
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+```
+
+# 38 字符串的排列
+
+```
+@author: sdubrz
+@date:  8/18/2020 16:11:58 PM  
+难度： 中等
+考察内容： 字符串 递归
+@e-mail: lwyz521604#163.com
+题目来自《剑指offer》 电子工业出版社
+```
+
+输入一个字符串，打印出该字符串中字符的所有排列。
+
+你可以以任意顺序返回这个字符串数组，但里面不能有重复元素。
+
+**示例:**
+
+```
+输入：s = "abc"
+输出：["abc","acb","bac","bca","cab","cba"]
+```
+
+**限制：**
+
++ 1 <= s 的长度 <= 8
+
+## 解法
+
+```java
+class Solution {
+    List<String> res = new LinkedList<>();
+    char[] c;
+    public String[] permutation(String s) {
+        c = s.toCharArray();
+        dfs(0);
+        return res.toArray(new String[res.size()]);
+    }
+    void dfs(int x) {
+        if(x == c.length - 1) {
+            res.add(String.valueOf(c)); // 添加排列方案
+            return;
+        }
+        HashSet<Character> set = new HashSet<>();
+        for(int i = x; i < c.length; i++) {
+            if(set.contains(c[i])) continue; // 重复，因此剪枝
+            set.add(c[i]);
+            swap(i, x); // 交换，将 c[i] 固定在第 x 位 
+            dfs(x + 1); // 开启固定第 x + 1 位字符
+            swap(i, x); // 恢复交换
+        }
+    }
+    void swap(int a, int b) {
+        char tmp = c[a];
+        c[a] = c[b];
+        c[b] = tmp;
+    }
+}
+
+```
+
+提交结果为
+
+```
+执行用时：12 ms, 在所有 Java 提交中击败了66.28%的用户
+内存消耗：45.4 MB, 在所有 Java 提交中击败了36.86%的用户
+```
+
+
+
+# 42 连续子数组的最大和
+
+```
+@author: sdubrz
+@date:  8/3/2020 6:47:45 PM  
+难度： 8/4/2020 10:56:03 PM 
+考察内容： 动态规划，分而治之
+@e-mail: lwyz521604#163.com
+题目来自《剑指offer》 电子工业出版社，图片来自LeetCode
+```
+
+输入一个整型数组，数组中的一个或连续多个整数组成一个子数组。求所有子数组的和的最大值。
+
+要求时间复杂度为O(n)。
+
+**示例1:**
+
+```
+输入: nums = [-2,1,-3,4,-1,2,1,-5,4]
+输出: 6
+解释: 连续子数组 [4,-1,2,1] 的和最大，为 6。
+```
+
+**提示：**
+
++ 1 <= arr.length <= 10^5
++ -100 <= arr[i] <= 100
+
+## 动态规划解法
+
+凡是符合条件的子数组必定存在最后一个元素，并且最后这个元素肯定是所给的数组中的某一个元素。所以我们只需要知道以每个数组结尾的所有子数组中和最大的即可。
+
+假设以第``i``个元素结尾的子数组中和最大的值为``f(i)``。则有``f(0)=nums[0]``。当``i>0``时，如果``f(i-1)>0``则``f(i)=f(i-1)+nums[i]``，而如果``f(i-1)<=0``，则``f(i)=nums[i]``。最后，我们从``f(0...n-1)``中选出最大的返回即可。据此可以写出时间复杂度为``O(n)``的动态规划实现：
+
+```java
+class Solution {
+    public int maxSubArray(int[] nums) {
+        if(nums.length==1){
+            return nums[0];
+        }
+
+        int n = nums.length;
+        int[] count = new int[n];
+        count[0] = nums[0];
+        int result = count[0];
+
+        for(int i=1; i<n; i++){
+            if(count[i-1]<0){
+                count[i] = nums[i];
+            }else{
+                count[i] = count[i-1] + nums[i];
+            }
+            if(result<count[i]){
+                result = count[i];
+            }
+        }
+
+        return result;
+    }
+}
+```
+
+在 LeetCode 系统中提交的结果为：
+
+```
+执行结果：通过 显示详情
+执行用时：1 ms, 在所有 Java 提交中击败了99.32%的用户
+内存消耗：46.4 MB, 在所有 Java 提交中击败了58.18%的用户
+```
+
+## 分治解法
+
+在《算法导论》中给出了一个时间复杂度同样为``O(n)``的分治解法。《算法导论》第4章 4.1节讲的最大子数组问题正文中给出了时间复杂度为``O(nlog(n))``的分治方法，在课后练习题4.1-5中又给出了线性复杂度的分治方法。其主要的思路是：对于一个数组的最大子数组，在这个最大子数组有多于两个元素的情况下，任意将这个最大子数组切分为前后两部分，这两部分各自的和必然是正的。这部分应该比较好理解，因为如果有一部分的和是负的或0，我们可以把这部分删掉，剩下的部分的和一定不小于原来的子数组。最大子数组的左右两部分的和都是正的，也就意味着左右两部分的和都要小于总的和。基于这个思路，可以写出如下代码
+
+```java
+class Solution {
+    public int maxSubArray(int[] nums) {
+        int tempLeft = 0;
+        int tempRight = 0;
+        int left = 0;
+        int right = 0;
+        int sum = nums[0];
+        int maxSum = nums[0];
+
+        for(int i=1; i<nums.length; i++){
+            if(sum+nums[i]>nums[i]){
+                sum = sum + nums[i];
+                tempRight = i;
+            }else{
+                sum = nums[i];
+                tempLeft = i;
+            }
+
+            if(maxSum<sum){
+                maxSum = sum;
+                left = tempLeft;
+                right = tempRight;
+            }
+        }
+
+        return maxSum;
+    }
+}
+```
+
+在LeetCode系统中提交的结果，这种方法的空间复杂度应该比前面的动态规划方法小吧，但是不知道为什么提交结果显示反而不如动态规划。
+
+```
+执行结果：通过
+执行用时 : 1 ms, 在所有 Java 提交中击败了 97.36% 的用户
+内存消耗 : 42.1 MB, 在所有 Java 提交中击败了 5.40% 的用户
+```
+
+# 52 两个链表的第一个公共节点
+
+```
+@date: 2020-08-21
+@difficulty: easy
+```
+
+输入两个链表，找出它们的第一个公共节点。
+
+如下面的两个链表：
+
+![](./images/52_1.png)
+
+在节点 c1 开始相交。
+
+**示例 1：**
+
+![](./images/52_2.png)
+
+```输入：intersectVal = 8, listA = [4,1,8,4,5], listB = [5,0,1,8,4,5], skipA = 2, skipB = 3
+输出：Reference of the node with value = 8
+输入解释：相交节点的值为 8 （注意，如果两个列表相交则不能为 0）。从各自的表头开始算起，链表 A 为 [4,1,8,4,5]，链表 B 为 [5,0,1,8,4,5]。在 A 中，相交节点前有 2 个节点；在 B 中，相交节点前有 3 个节点。
+```
+
+**示例 2：**
+
+![](./images/52_3.png)
+
+```输入：intersectVal = 2, listA = [0,9,1,2,4], listB = [3,2,4], skipA = 3, skipB = 1
+输出：Reference of the node with value = 2
+输入解释：相交节点的值为 2 （注意，如果两个列表相交则不能为 0）。从各自的表头开始算起，链表 A 为 [0,9,1,2,4]，链表 B 为 [3,2,4]。在 A 中，相交节点前有 3 个节点；在 B 中，相交节点前有 1 个节点。
+```
+
+**示例 3：**
+
+![](./images/52_4.png)
+
+```输入：intersectVal = 0, listA = [2,6,4], listB = [1,5], skipA = 3, skipB = 2
+输出：null
+输入解释：从各自的表头开始算起，链表 A 为 [2,6,4]，链表 B 为 [1,5]。由于这两个链表不相交，所以 intersectVal 必须为 0，而 skipA 和 skipB 可以是任意值。
+解释：这两个链表不相交，因此返回 null。
+```
+
+**注意：**
+
++ 如果两个链表没有交点，返回 null.
++ 在返回结果后，两个链表仍须保持原有的结构。
++ 可假定整个链表结构中没有循环。
++ 程序尽量满足 O(n) 时间复杂度，且仅用 O(1) 内存。
+
+## 用HashSet的解法
+
+同时遍历两个链表，将遍历过的节点添加到HashSet中。这样时间复杂度是 ``O(n)``，空间复杂度也是 ``O(n)``，还打不到题目要求的``O(1)``。下面是具体的实现：
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) {
+ *         val = x;
+ *         next = null;
+ *     }
+ * }
+ */
+public class Solution {
+    public ListNode getIntersectionNode(ListNode headA, ListNode headB) {
+        if(headA==null || headB==null){
+            return null;
+        }
+        HashSet<ListNode> set = new HashSet<>();
+        ListNode ptr1 = headA;
+        ListNode ptr2 = headB;
+        while(ptr1!=null || ptr2!=null){
+            if(ptr1!=null){
+                if(!set.add(ptr1)){
+                    return ptr1;
+                }
+                ptr1 = ptr1.next;
+            }
+            if(ptr2!=null){
+                if(!set.add(ptr2)){
+                    return ptr2;
+                }
+                ptr2 = ptr2.next;
+            }
+        }
+
+        return null;
+
+    }
+}
+```
+
+在 LeetCode 系统中提交的结果为
+
+```
+执行用时：11 ms, 在所有 Java 提交中击败了7.71%的用户
+内存消耗：43.2 MB, 在所有 Java 提交中击败了5.41%的用户
+```
+
+空间和时间表现得都比较糟糕。
+
+## 剑指offer给出的两种思路
+
++ 借助辅助栈。
+
+  若两个链表具有公共节点，那么公共节点一定位于它们的尾部，所以可以使用栈来将顺序颠倒过来，然后逐个比较，直到最后一个相同的节点。这样时间复杂度与空间复杂度均为``O(n)``。
+
++ 空间复杂度为``O(1)``的方法
+
+  先遍历两个链表，获得两个链表的长度，假设分别为n和m，并且n>m，则可以先遍历较长的链表n-m步，然后两个链表一起遍历。这样可以把空间复杂度也降至``O(1)``。
+
+其实，本来这个问题就不太可能有时间复杂度优于``O(n)``的方法。
+
+
+
+# 55 二叉树的深度
+
+```
+@author: sdubrz
+@date:  8/9/2020 8:43:53 PM  
+难度： 简单
+考察内容： 二叉树
+@e-mail: lwyz521604#163.com
+题目来自《剑指offer》 电子工业出版社，图片来自LeetCode
+```
+
+输入一棵二叉树的根节点，求该树的深度。从根节点到叶节点依次经过的节点（含根、叶节点）形成树的一条路径，最长路径的长度为树的深度。
+
+例如：
+
+给定二叉树 [3,9,20,null,null,15,7]，
+
+```
+    3
+   / \
+  9  20
+    /  \
+   15   7
+```
+
+返回它的最大深度 3 。
+
+**提示：**
+
++ 节点总数 <= 10000
+
+## 广度优先搜索解法
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+    public int maxDepth(TreeNode root) {
+        if(root==null){
+            return 0;
+        }
+
+        int depth = 0;
+        Queue<TreeNode> queue1 = new LinkedList<>();
+        queue1.add(root);
+        while(!queue1.isEmpty()){
+            depth++;
+            Queue<TreeNode> queue2 = new LinkedList<>();
+            while(!queue1.isEmpty()){
+                TreeNode temp = queue1.poll();
+                if(temp.left!=null){
+                    queue2.add(temp.left);
+                }
+                if(temp.right!=null){
+                    queue2.add(temp.right);
+                }
+            }
+            queue1 = queue2;
+        }
+
+        return depth;
+    }
+}
+```
+
+提交结果为
+
+```
+执行用时：1 ms, 在所有 Java 提交中击败了21.41%的用户
+内存消耗：39.2 MB, 在所有 Java 提交中击败了98.38%的用户
+```
+
+# 50 第一次只出现一次的字符
+
+在字符串 s 中找出第一个只出现一次的字符。如果没有，返回一个单空格。 s 只包含小写字母。
+
+**示例:**
+
+```
+s = "abaccdeff"
+返回 "b"
+
+s = "" 
+返回 " "
+```
+
+**限制：**
+
+0 <= s 的长度 <= 50000
+
+## 解法
+
+首先可以肯定的是，这道题至少要完整地遍历一次字符串，所以时间复杂度至少是``O(n)``的。由于字符串中所有的字符都是小写的英文字母，所以我们可以用一个长为26的数组来存储每个字符出现的次数。具体实现如下
+
+```java
+class Solution {
+    public char firstUniqChar(String s) {
+        if(s.length()==0){
+            return ' ';
+        }
+
+        int[] count = new int[26];
+        char[] arr = s.toCharArray();
+        for(int i=0; i<arr.length; i++){
+            count[arr[i]-'a']++;
+        }
+
+        for(int i=0; i<arr.length; i++){
+            if(count[arr[i]-'a']==1){
+                return arr[i];
+            }
+        }
+
+        return ' ';
+
+    }
+}
+```
+
+提交结果为
+
+```
+执行用时：4 ms, 在所有 Java 提交中击败了99.37%的用户
+内存消耗：40.4 MB, 在所有 Java 提交中击败了41.13%的用户
+```
+
+# 68-I 二叉搜索树的最近公共祖先
+
+```
+@date: 2020-08-21
+@difficulty: easy
+```
+
+给定一个二叉搜索树, 找到该树中两个指定节点的最近公共祖先。
+
+百度百科中最近公共祖先的定义为：“对于有根树 T 的两个结点 p、q，最近公共祖先表示为一个结点 x，满足 x 是 p、q 的祖先且 x 的深度尽可能大（**一个节点也可以是它自己的祖先**）。”
+
+例如，给定如下二叉搜索树:  root = [6,2,8,0,4,7,9,null,null,3,5]
+
+![](.\images\68.png)
+
+ 
+
+**示例 1:**
+
+```
+输入: root = [6,2,8,0,4,7,9,null,null,3,5], p = 2, q = 8
+输出: 6 
+解释: 节点 2 和节点 8 的最近公共祖先是 6。
+```
+
+**示例 2:**
+
+```
+输入: root = [6,2,8,0,4,7,9,null,null,3,5], p = 2, q = 4
+输出: 2
+解释: 节点 2 和节点 4 的最近公共祖先是 2, 因为根据定义最近公共祖先节点可以为节点本身。
+```
+
+**说明:**
+
++ 所有节点的值都是唯一的。
++ p、q 为不同节点且均存在于给定的二叉搜索树中。
+
+## 解法
+
+从根节点搜索两个节点，到分叉处的地方就是最近公共祖先了。
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        
+        TreeNode current = root;
+        TreeNode ptr1 = current;
+        TreeNode ptr2 = current;
+        while(ptr1.val==ptr2.val){
+            current = ptr1;
+            if(current.val==p.val || current.val==q.val){
+                return current;
+            }
+            if(p.val>current.val){
+                ptr1 = current.right;
+            }else{
+                ptr1 = current.left;
+            }
+
+            if(q.val>current.val){
+                ptr2 = current.right;
+            }else{
+                ptr2 = current.left;
+            }
+        }
+        return current;
+    }
+}
+```
+
+在 LeetCode 系统中提交的结果为
+
+```
+执行用时：6 ms, 在所有 Java 提交中击败了100.00%的用户
+内存消耗：41.3 MB, 在所有 Java 提交中击败了17.80%的用户
+```
+
+
+

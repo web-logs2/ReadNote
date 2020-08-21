@@ -1,4 +1,4 @@
-# 剑指offer 30 包含min函数的栈
+# 30 包含min函数的栈
 
 ```
 @author: sdubrz
@@ -31,7 +31,7 @@ minStack.min();   --> 返回 -2.
 
 可以用两个栈实现，第一个栈用于正常存储数据，第二个栈依次存储当前遇到的最小值。下面是具体的Java程序实现：
 
-```
+```java
 import java.util.*;
 
 class MinStack {
