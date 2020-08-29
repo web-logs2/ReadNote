@@ -3973,6 +3973,155 @@ class Solution {
 内存消耗 : 42.1 MB, 在所有 Java 提交中击败了 5.40% 的用户
 ```
 
+# 49 丑数
+
+我们把只包含质因子 2、3 和 5 的数称作丑数（Ugly Number）。求按从小到大的顺序的第 n 个丑数。
+
+**示例**
+
+```
+输入: n = 10
+输出: 12
+解释: 1, 2, 3, 4, 5, 6, 8, 9, 10, 12 是前 10 个丑数。
+```
+
+**说明:** 
+
+1. `1` 是丑数。
+2. `n` **不超过**1690。
+
+## HashMap实现的动态规划解法
+
+这道题可以用动态规划来求解。如果一个数是丑数，那么它必然至少能被2，3，5中的1个整除，当然除了1之外。则target/2是丑数，target/3是丑数，target/5是丑数。
+
+```java
+class Solution {
+    HashMap<Integer, Boolean> map = new HashMap<>();
+    public int nthUglyNumber(int n) {
+        if(n==1){
+            return 1;
+        }
+        
+        map.put(1, true);
+        int count = 1;
+        int current = 2;
+        while(count<n){
+            if(current%2==0){
+                map.put(current, map.get(current/2));
+            }else if(current%3==0){
+                map.put(current, map.get(current/3));   
+            }else if(current%5==0){
+                map.put(current, map.get(current/5));
+            }else{
+                map.put(current, false);
+            }
+            if(map.get(current)){
+                count++;
+            }
+            current++;
+        }
+
+        return --current;
+
+    }
+
+    
+}
+```
+
+这里使用了HashMap来存储中间结果，但是提交之后显示超时。
+
+## 用数组提高速度
+
+将HashMap改为ArrayList可以在一定程度上提高运行速度，但是提交之后系统显示超出内存限制
+
+```java
+class Solution {  
+    public int nthUglyNumber(int n) {
+        if(n==1){
+            return 1;
+        }
+        ArrayList<Integer> labels = new ArrayList<>();
+        
+        labels.add(0);
+        labels.add(1);
+        int count = 1;
+        int current = 2;
+        while(count<n){
+            if(current%2==0){
+                labels.add(labels.get(current/2));
+            }else if(current%3==0){
+                labels.add(labels.get(current/3));  
+            }else if(current%5==0){
+                labels.add(labels.get(current/5));
+            }else{
+                labels.add(0);
+            }
+            if(labels.get(current)==1){
+                count++;
+            }
+            current++;
+        }
+
+        return --current;
+
+    }
+
+    
+}
+```
+
+## 更快的动态规划方法
+
+下面是一种更快的动态规划方法
+
+```java
+class Solution {
+    public int nthUglyNumber(int n) {
+        if(n==1){
+            return 1;
+        }
+
+        int[] res = new int[n];
+        res[0] = 1;
+        int a = 0;
+        int b = 0;
+        int c = 0;
+
+        for(int i=1; i<n; i++){
+            int temp1 = res[a]*2;
+            int temp2 = res[b]*3;
+            int temp3 = res[c]*5;
+            res[i] = Math.min(Math.min(temp1, temp2), temp3);
+
+            //注意这三个 if 不能加 else ，因为temp1,temp2,temp3中可能会有相等的数
+            if(res[i]==temp1){
+                a++;
+            }
+            if(res[i]==temp2){
+                b++;
+            }
+            if(res[i]==temp3){
+                c++;
+            }  
+        }
+
+        return res[n-1];
+    }
+}
+```
+
+提交结果为
+
+```
+执行用时：2 ms, 在所有 Java 提交中击败了99.26%的用户
+内存消耗：37.8 MB, 在所有 Java 提交中击败了34.50%的用户
+```
+
+
+
+
+
 # 52 两个链表的第一个公共节点
 
 ```
@@ -4224,6 +4373,574 @@ class Solution {
 内存消耗：40.4 MB, 在所有 Java 提交中击败了41.13%的用户
 ```
 
+# 53-I 在排序数组中查找数字 I
+
+```
+@date: 2020-08-26
+```
+
+统计一个数字在排序数组中出现的次数。
+
+**示例 1:**
+
+```
+输入: nums = [5,7,7,8,8,10], target = 8
+输出: 2
+```
+
+**示例 2:**
+
+```
+输入: nums = [5,7,7,8,8,10], target = 6
+输出: 0
+```
+
+
+
+**限制：**
+
++ 0 <= 数组长度 <= 50000
+
+## 二分解法
+
+这道题应该就是用二分法来解了
+
+```java
+class Solution {
+    public int search(int[] nums, int target) {
+        if(nums.length==0){
+            return 0;
+        }
+        return search(nums, target, 0, nums.length-1);
+    }
+
+    private int search(int[] nums, int target, int left, int right){
+        if(right<left){
+            return 0;
+        }
+        if(nums[left]>target){
+            return 0;
+        }
+        if(nums[right]<target){
+            return 0;
+        }
+        if(left==right){
+            if(nums[left]==target)
+                return 1;
+            else
+                return 0;
+        }
+        if(nums[left]==target && nums[right]==target){
+            return right-left+1;
+        }
+        int mid = (left+right)/2;
+        return search(nums, target, left, mid)+search(nums, target, mid+1, right);
+
+    }
+}
+```
+
+提交结果为
+
+```
+执行用时：0 ms, 在所有 Java 提交中击败了100.00%的用户
+内存消耗：42.8 MB, 在所有 Java 提交中击败了32.61%的用户
+```
+
+# 53-II 0~n-1中缺失的数字
+
+一个长度为n-1的递增排序数组中的所有数字都是唯一的，并且每个数字都在范围0～n-1之内。在范围0～n-1内的n个数字中有且只有一个数字不在该数组中，请找出这个数字。
+
+**示例1**
+
+```
+输入: [0,1,3]
+输出: 2
+```
+
+**示例2**
+
+```
+输入: [0,1,2,3,4,5,6,7,9]
+输出: 8
+```
+
+**限制**
+
++ 1 <= 数组长度 <= 10000
+
+## 解法
+
+很明显，这道题也可以用二分法来解
+
+```java
+class Solution {
+    public int missingNumber(int[] nums) {
+        return missingNumber(nums, 0, nums.length);
+    }
+
+    private int missingNumber(int[] nums, int left, int right){
+        if(left==right){
+            return left;
+        }
+
+        if(nums[left]!=left){
+            return left;
+        }
+
+        int mid = (left+right)/2;
+        if(nums[mid]==mid){
+            return missingNumber(nums, mid+1, right);
+        }else{
+            return missingNumber(nums, left, mid);
+        }
+    }
+}
+```
+
+提交结果为
+
+```
+执行用时：0 ms, 在所有 Java 提交中击败了100.00%的用户
+内存消耗：40.5 MB, 在所有 Java 提交中击败了35.33%的用户
+```
+
+# 54 二叉树的第k大的节点
+
+```
+@date: 2020-08-26
+```
+
+给定一棵二叉搜索树，请找出其中第k大的节点。
+
+**示例 1**
+
+```
+输入: root = [3,1,4,null,2], k = 1
+   3
+  / \
+ 1   4
+  \
+   2
+输出: 4
+```
+
+**示例 2**
+
+```
+输入: root = [5,3,6,2,4,null,null,1], k = 3
+       5
+      / \
+     3   6
+    / \
+   2   4
+  /
+ 1
+输出: 4
+```
+
+**限制**
+
+1 ≤ k ≤ 二叉搜索树元素个数
+
+## 中序遍历解法
+
+这道题最容易想到的就是用中序遍历遍历整颗树，然后取倒数第k个即可。这样需要遍历整颗树，不是最优的方法。下面是Java代码实现
+
+```java 
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+    public int kthLargest(TreeNode root, int k) {
+        
+        Stack<Integer> stack = new Stack<>();
+        midFind(stack, root);
+        for(int i=k; i>1; i--){
+            stack.pop();
+        }
+        return stack.pop();
+    }
+
+    private void midFind(Stack<Integer> stack, TreeNode root){
+        if(root==null){
+            return;
+        }
+        if(root.left!=null){
+            midFind(stack, root.left);
+        }
+        stack.push(root.val);
+        if(root.right!=null){
+            midFind(stack, root.right);
+        }
+    }
+}
+```
+
+提交结果为
+
+```
+执行用时：2 ms, 在所有 Java 提交中击败了10.59%的用户
+内存消耗：40.4 MB, 在所有 Java 提交中击败了6.46%的用户
+```
+
+## 中序遍历的倒序
+
+把中序遍历的过程倒过来，这样可以不必完成一遍完整的遍历。速度会有所提升，当然，如果用渐进记法的话，时间复杂度仍然是``O(n)``的。下面是具体的程序实现
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+    int count;
+    int result;
+    public int kthLargest(TreeNode root, int k) {
+        count = k;
+        midFind(root);
+        return result;
+    }
+
+    private void midFind(TreeNode root){
+        if(root==null){
+            return;
+        }
+        midFind(root.right);
+        if(count==0){
+            return;
+        }
+        count--;
+        if(count==0){
+            result = root.val;
+            return;
+        }
+        midFind(root.left);
+        
+    }
+}
+```
+
+提交结果为
+
+```
+执行用时：0 ms, 在所有 Java 提交中击败了100.00%的用户
+内存消耗：39.5 MB, 在所有 Java 提交中击败了64.80%的用户
+```
+
+# 55-II 平衡二叉树
+
+```
+@date: 2020-08-25
+```
+
+输入一棵二叉树的根节点，判断该树是不是平衡二叉树。如果某二叉树中任意节点的左右子树的深度相差不超过1，那么它就是一棵平衡二叉树。
+
+**示例 1:**
+
+给定二叉树`` [3,9,20,null,null,15,7]``
+
+        3
+       / \
+      9  20
+        /  \
+       15   7
+
+返回 true 。
+
+**示例 2:**
+
+给定二叉树 ``[1,2,2,3,3,null,null,4,4]``
+
+           1
+          / \
+         2   2
+        / \
+       3   3
+      / \
+     4   4
+
+返回 false 。
+
+**限制：**
+
++ 1 <= 树的结点个数 <= 10000
+
+## 递归解法
+
+一时间没有想到更好的解法，所以用递归先写了一下，结果有点意外，感觉应该有更好的方法吧。
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+    public boolean isBalanced(TreeNode root) {
+        if(root==null){
+            return true;
+        }
+
+        int left = depth(root.left);
+        int right = depth(root.right);
+        if(Math.abs(left-right)>1){
+            return false;
+        }
+
+        return isBalanced(root.left) && isBalanced(root.right);
+        
+    }
+
+    public int depth(TreeNode root){
+        if(root==null){
+            return 0;
+        }
+
+        int left = depth(root.left);
+        int right = depth(root.right);
+        
+        return Math.max(left, right)+1;
+    }
+}
+```
+
+提交结果为
+
+```
+执行用时：1 ms, 在所有 Java 提交中击败了99.94%的用户
+内存消耗：39.9 MB, 在所有 Java 提交中击败了39.95%的用户
+```
+
+## 后序遍历加剪枝
+
+在评论区有人用了后序遍历加剪枝的方式来实现，使得算法的时间复杂度降到了``O(n)``，下面是具体的Java程序实现
+
+```
+class Solution {
+    public boolean isBalanced(TreeNode root) {
+        return recur(root) != -1;
+    }
+
+    private int recur(TreeNode root) {
+        if (root == null) return 0;
+        int left = recur(root.left);
+        if(left == -1) return -1;
+        int right = recur(root.right);
+        if(right == -1) return -1;
+        return Math.abs(left - right) < 2 ? Math.max(left, right) + 1 : -1;
+    }
+}
+
+作者：jyd
+链接：https://leetcode-cn.com/problems/ping-heng-er-cha-shu-lcof/solution/mian-shi-ti-55-ii-ping-heng-er-cha-shu-cong-di-zhi/
+来源：力扣（LeetCode）
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+```
+
+# 56-I 数组中数字出现的次数
+
+```
+@date: 2020-08-26
+```
+
+一个整型数组 `nums` 里除两个数字之外，其他数字都出现了两次。请写程序找出这两个只出现一次的数字。要求时间复杂度是O(n)，空间复杂度是O(1)。
+
+**示例 1**
+
+```
+输入：nums = [4,1,4,6]
+输出：[1,6] 或 [6,1]
+```
+
+**示例 2**
+
+```
+输入：nums = [1,2,10,4,1,4,3,3]
+输出：[2,10] 或 [10,2]
+```
+
+**限制**
+
++ 2 <= nums.length <= 10000
+
+## 解法
+
+这道题我没有想出符合题目要求复杂度的解法。后来看了官方的解法，是利用的位操作，利用的是两个相同的数的异或为0。具体的解法如下所示
+
+```java
+class Solution {
+    public int[] singleNumbers(int[] nums) {
+        int[] result = new int[2];
+        int n = nums.length;
+
+        int temp = nums[0];
+        for(int i=1; i<n; i++){
+            temp = temp^nums[i];
+        }
+        int ptr = 0;
+        while((temp & 1) == 0){
+            temp = temp>>1;
+            ptr++;
+        }
+        
+        result[0] = nums[0];
+        //boolean first = true;
+        for(int i=1; i<n; i++){
+            int current = nums[0]^nums[i];
+            for(int j=0; j<ptr; j++){
+                current = current>>1;
+            }
+            if((current&1)==0){
+                result[0] = result[0]^nums[i];
+            }else{    
+                result[1] = result[1]^nums[i];
+                
+            }
+        }
+
+        return result;
+    }
+}
+```
+
+提交的结果为
+
+```
+执行用时：3 ms, 在所有 Java 提交中击败了23.42%的用户
+内存消耗：41.6 MB, 在所有 Java 提交中击败了18.97%的用户
+```
+
+# 57 和为s的两个数字
+
+```
+@date: 2020-08-28
+```
+
+输入一个递增排序的数组和一个数字s，在数组中查找两个数，使得它们的和正好是s。如果有多对数字的和等于s，则输出任意一对即可。
+
+**示例 1**
+
+```
+输入：nums = [2,7,11,15], target = 9
+输出：[2,7] 或者 [7,2]
+```
+
+**示例 2**
+
+```
+输入：nums = [10,26,30,31,47,60], target = 40
+输出：[10,30] 或者 [30,10]
+```
+
+**限制**
+
+- `1 <= nums.length <= 10^5`
+- `1 <= nums[i] <= 10^6`
+
+## 解法
+
+可以用前后两个指针的方法来做。保持``left``和``right``两个指针。如果 ``nums[left]+nums[right]>target`` 就让 ``right--`` ，如果小于 ``target`` 就让 ``left++``。下面是Java程序的实现
+
+```java
+class Solution {
+    public int[] twoSum(int[] nums, int target) {
+        int[] result = new int[2];
+        int left = 0;
+        int right = nums.length-1;
+        while(left<right){
+            int temp = nums[left] + nums[right];
+            if(temp==target){
+                result[0] = nums[left];
+                result[1] = nums[right];
+                break;
+            }else if(temp>target){
+                right--;
+            }else{
+                left++;
+            }
+        }
+
+        return result;
+    }
+}
+```
+
+提交结果为
+
+```
+执行用时：2 ms, 在所有 Java 提交中击败了98.49%的用户
+内存消耗：57.3 MB, 在所有 Java 提交中击败了17.44%的用户
+```
+
+从这道题给的限制条件中看到数组可能只含有一个元素，这种情况是没有意义的。我没有想好应该怎么处理，所以就没有处理，从提交结果看也没有这种测试数据。应该是一个纰漏。
+
+另外，这道题的指针移动或许可以用二分法来加速，但是编码会稍微复杂一些。
+
+
+
+# 64 求 1+2+...+n
+
+求 1+2+...+n ，要求不能使用乘除法、for、while、if、else、switch、case等关键字及条件判断语句（A?B:C）。
+
+**示例 1：**
+
+```
+输入: n = 3
+输出: 6
+```
+
+**示例 2：**
+
+```
+输入: n = 9
+输出: 45
+```
+
+
+
+**限制：**
+
++ 1 <= n <= 10000
+
+## 乘方解法
+
+不能用乘除法和循环，所以我直接用了乘方，来计算 n*n+n。但是还需要一个除以2的操作，直接使用了右移一位的方法。下面是Java语言实现。
+
+```Java
+class Solution {
+    public int sumNums(int n) {
+        int temp = (int)Math.pow(n, 2)+n;
+        return temp>>1;
+
+    }
+}
+```
+
+提交结果为
+
+```
+执行用时：0 ms, 在所有 Java 提交中击败了100.00%的用户
+内存消耗：36.6 MB, 在所有 Java 提交中击败了82.52%的用户
+```
+
+
+
 # 68-I 二叉搜索树的最近公共祖先
 
 ```
@@ -4309,6 +5026,209 @@ class Solution {
 ```
 执行用时：6 ms, 在所有 Java 提交中击败了100.00%的用户
 内存消耗：41.3 MB, 在所有 Java 提交中击败了17.80%的用户
+```
+
+# 68-I 二叉树的最近公共祖先
+
+给定一个二叉树, 找到该树中两个指定节点的最近公共祖先。
+
+百度百科中最近公共祖先的定义为：“对于有根树 T 的两个结点 p、q，最近公共祖先表示为一个结点 x，满足 x 是 p、q 的祖先且 x 的深度尽可能大（一个节点也可以是它自己的祖先）。”
+
+例如，给定如下二叉树:  root = [3,5,1,6,2,0,8,null,null,7,4]
+
+![](./images/68_II.png) 
+
+**示例 1:**
+
+```
+输入: root = [3,5,1,6,2,0,8,null,null,7,4], p = 5, q = 1
+输出: 3
+解释: 节点 5 和节点 1 的最近公共祖先是节点 3。
+```
+
+**示例 2:**
+
+```输入: root = [3,5,1,6,2,0,8,null,null,7,4], p = 5, q = 4
+输出: 5
+解释: 节点 5 和节点 4 的最近公共祖先是节点 5。因为根据定义最近公共祖先节点可以为节点本身。
+```
+
+**说明:**
+
++ 所有节点的值都是唯一的。
++ p、q 为不同节点且均存在于给定的二叉树中。
+
+## 第一种解法
+
+第一种方法是获得从根节点到两个目标节点的路径，然后得到两者最后一个共同的节点。实现如下，但是提交结果系统显示超时
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        List<TreeNode> list1 = findPath(root, p);
+        List<TreeNode> list2 = findPath(root, q);
+
+        Iterator<TreeNode> iter1 = list1.iterator();
+        Iterator<TreeNode> iter2 = list2.iterator();
+       
+        TreeNode last = root;
+
+        while(iter1.hasNext() && iter2.hasNext()){
+            TreeNode ptr1 = iter1.next();
+            TreeNode ptr2 = iter2.next();
+            if(ptr1.val==ptr2.val){
+                last = ptr1;
+            }else{
+                break;
+            }
+        }
+
+        return last;
+    }
+
+    // 寻找从根节点到节点p之间的路径
+    public List<TreeNode> findPath(TreeNode root, TreeNode p){
+        List<TreeNode> list = new LinkedList<>();
+        if(root==null){
+            return list;
+        }
+        if(root.val==p.val){
+            list.add(root);
+            return list;
+        }
+
+        if(root.left!=null){
+            List<TreeNode> list1 = findPath(root.left, p);
+            if(!list1.isEmpty()){
+                list.add(root);
+                list.addAll(list1);
+            }
+            //return list;
+        }
+
+        if(root.right!=null){
+            List<TreeNode> list2 = findPath(root.right, p);
+            if(!list2.isEmpty()){
+                list.add(root);
+                list.addAll(list2);
+            }
+            //return list;
+        }
+
+        return list;
+    }
+}
+```
+
+## 第二种解法 用HashMap记录路径
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        HashMap<TreeNode, Boolean> map1 = new HashMap<>();
+        HashMap<TreeNode, Boolean> map2 = new HashMap<>();
+
+        this.findNode(map1, root, p);
+        this.findNode(map2, root, q);
+
+        TreeNode current = root;
+        while(current!=null){
+            if(current.left!=null){
+                if(map1.get(current.left)!=null && map2.get(current.left)!=null
+                && map1.get(current.left) && map2.get(current.left)){
+                    current = current.left;
+                    continue;
+                }
+            }
+            
+            if(current.right!=null){
+                if(map1.get(current.right)!=null && map2.get(current.right)!=null
+                && map1.get(current.right) && map2.get(current.right)){
+                    current = current.right;
+                    continue;
+                }
+            }
+
+            break;
+        }
+
+        return current;
+
+    }
+
+    //public boolean findNode()
+    public boolean findNode(HashMap<TreeNode, Boolean> map, TreeNode root, TreeNode p){      
+        if(root==p){
+            map.put(root, true);
+            return true;
+        }
+        if(root.left!=null){
+            if(findNode(map, root.left, p)){
+                map.put(root, true);
+                return true;
+            }
+        }
+        if(root.right!=null){
+            if(findNode(map, root.right, p)){
+                map.put(root, true);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+}
+```
+
+提交结果为
+
+```
+执行用时：16 ms, 在所有 Java 提交中击败了5.43%的用户
+内存消耗：42.2 MB, 在所有 Java 提交中击败了7.23%的用户
+```
+
+## 网友的解法
+
+下面是一个网友给出的代码实现
+
+```java
+class Solution {
+    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        if(root == null || root == p || root == q) return root;
+        TreeNode left = lowestCommonAncestor(root.left, p, q);
+        TreeNode right = lowestCommonAncestor(root.right, p, q);
+        if(left == null && right == null) return null; // 1.
+        if(left == null) return right; // 3.
+        if(right == null) return left; // 4.
+        return root; // 2. if(left != null and right != null)
+    }
+}
+```
+
+提交结果为
+
+```
+执行用时：8 ms, 在所有 Java 提交中击败了59.22%的用户
+内存消耗：41.7 MB, 在所有 Java 提交中击败了77.73%的用户
 ```
 
 
