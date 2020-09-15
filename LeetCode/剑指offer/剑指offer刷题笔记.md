@@ -882,8 +882,6 @@ class Solution {
 
 但矩阵中不包含字符串“abfb”的路径，因为字符串的第一个字符b占据了矩阵中的第一行第二个格子之后，路径不能再次进入这个格子。
 
- 
-
 **示例 1：**
 
 ```
@@ -1932,7 +1930,7 @@ class Solution {
 @author: sdubrz
 @date: 7/25/2020 9:59:53 AM    
 难度： 简单
-考察内容： 二进制
+考察内容： 数组
 @e-mail: lwyz521604#163.com
 题目来自《剑指offer》 电子工业出版社
 ```
@@ -1999,7 +1997,7 @@ class Solution {
 @author: sdubrz
 @date: 7/25/2020 10:11:41 AM    
 难度： 简单
-考察内容： 二进制
+考察内容： 链表
 @e-mail: lwyz521604#163.com
 题目来自《剑指offer》 电子工业出版社
 ```
@@ -3858,7 +3856,341 @@ class Solution {
 内存消耗：45.4 MB, 在所有 Java 提交中击败了36.86%的用户
 ```
 
+# 41 数据流中的中位数
 
+```
+@date: 2020-09-05
+@difficulty: hard
+```
+
+如何得到一个数据流中的中位数？如果从数据流中读出奇数个数值，那么中位数就是所有数值排序之后位于中间的数值。如果从数据流中读出偶数个数值，那么中位数就是所有数值排序之后中间两个数的平均值。
+
+例如，
+
+[2,3,4] 的中位数是 3
+
+[2,3] 的中位数是 (2 + 3) / 2 = 2.5
+
+设计一个支持以下两种操作的数据结构：
+
++ void addNum(int num) - 从数据流中添加一个整数到数据结构中。
++ double findMedian() - 返回目前所有元素的中位数。
+
+**示例 1**
+
+```
+输入：
+["MedianFinder","addNum","addNum","findMedian","addNum","findMedian"]
+[[],[1],[2],[],[3],[]]
+输出：[null,null,null,1.50000,null,2.00000]
+```
+
+**示例 2**
+
+```
+输入：
+["MedianFinder","addNum","findMedian","addNum","findMedian"]
+[[],[2],[],[3],[]]
+输出：[null,null,2.00000,null,2.50000]
+```
+
+**限制**
+
++ 最多会对 `addNum、findMedia`进行 `50000` 次调用。
+
+## 插入排序解法
+
+对于中位数和顺序统计量的问题，算法导论中有专门的一章来讲。对于一个长度为 n 的未排序数组，要查找它的第几大的数，或者中位数。可以基于快速排序中的分治思想实现一种期望时间复杂度为 $O(n)$ 的算法，但是，这种方法的最坏时间复杂度为 $O(n^2)$。不过一种更加复杂的方法可以将最坏时间复杂度降至$O(n)$。但是想了想，对于这个题来说，没有想出怎么用这种方式实现一种优于插入排序方法的解法。
+
+但是基于好奇，还是想看下用插入排序的插入过程维护数组，效果怎么样。用插入排序的插入过程维持数组，就是当需要插入新数值时，每次都将其插入到正确的位置上，这样保证整个数组始终是排好序的。这样插入新数的时间复杂度为 $O(n)$，而返回中位数时，我们只需要根据数组的下标计算即可，所以时间复杂度为$O(1)$。下面是具体的Java程序实现，比较简单。
+
+```java
+public class MedianFinder {
+    int[] nums;
+    int size;
+    public MedianFinder(){
+        nums = new int[50000];
+        size = 0;
+    }
+
+    public void addNum(int num){
+        int ptr = size;
+        while(ptr>0 && nums[ptr-1]>num){
+            nums[ptr] = nums[ptr-1];
+            ptr--;
+        }
+        nums[ptr] = num;
+        size++;
+    }
+
+    public double findMedian(){
+        if(size==0){
+            return 0;
+        }
+        if(size%2==1){
+            return nums[size/2];
+        }else{
+            return (0.0+nums[size/2]+nums[size/2-1]) / 2.0;
+        }
+
+    }
+}
+
+
+/**
+ * Your MedianFinder object will be instantiated and called as such:
+ * MedianFinder obj = new MedianFinder();
+ * obj.addNum(num);
+ * double param_2 = obj.findMedian();
+ */
+```
+
+提交结果为
+
+```
+执行用时：215 ms, 在所有 Java 提交中击败了9.34%的用户
+内存消耗：49.5 MB, 在所有 Java 提交中击败了99.21%的用户
+```
+
+从直觉上判断，这个题时间复杂的极限可能是把这个$O(n)$改为$O(logn)$。
+
+## AVL树解法
+
+打开《剑指offer》，才发现这个题可以用AVL树的解法来实现$O(logn)$。不过，要是用AVL树解的话，可以放弃了。无论是笔试还是面试，应该都是写不完的。因而，这里也就不放代码了，其实我也没去实现。
+
+## 最大堆，最小堆解法
+
+由于AVL树解法的不现实性，《剑指offer》书中给出了另一种同时使用最大堆和最小堆的方法。这个方法还是颇为巧妙的。让较大的一般放在最大堆中，较小的一半放在最小堆中，这样插入新数字的时间复杂度为$O(longn)$，获取中位数的时间复杂度为$O(1)$。妙呀。
+
+下面是具体的Java程序实现，建议再写的时候把最大堆和最小堆单独拿出来分别作为一个新的类，我这种写法显得类有点大。
+
+```java
+public class MedianFinder {
+    int size, leftSize, rightSize;
+    int[] leftHeap;  // 最大堆，存放较小的一半数据
+    int[] rightHeap;  // 最小堆，存放较大的一半数据
+    final int MAXLENGTH = 50000;
+
+    public MedianFinder(){
+        leftHeap = new int[MAXLENGTH];
+        rightHeap = new int[MAXLENGTH];
+        size = 0;
+        leftSize = 0;
+        rightSize = 0;
+    }
+
+    public void addNum(int num){
+        if(size==0){
+            leftHeap[0] = num;
+            size = 1;
+            leftSize = 1;
+            return;
+        }
+
+        if(num>leftHeap[0]){
+            // 将其放入最小堆
+            rightHeap[rightSize] = num;
+            rightSize++;
+            keepMinHeap();
+        }else{
+            // 将其放入最大堆
+            leftHeap[leftSize] = num;
+            leftSize++;
+            keepMaxHeap();
+        }
+        size = leftSize + rightSize;
+        keepMean();
+    }
+
+    public double findMedian(){
+        if(size==0){
+            return -1;
+        }
+        if(size%2==1){
+            return leftHeap[0];
+        }else{
+            return (0.0+leftHeap[0]+rightHeap[0]) / 2.0;
+        }
+
+    }
+
+    // 均衡最小堆与最大堆之间的元素个数，使最大堆中元素个数比最小堆多1，或相等
+    private void keepMean(){
+        if(leftSize==rightSize || leftSize-rightSize==1){
+            return;
+        }
+
+        if(leftSize>rightSize){
+            // 需要从最大堆中取出最大值，并放到最小堆中
+            int temp = peekMaxHeap();
+            rightHeap[rightSize] = temp;
+            rightSize++;
+            keepMinHeap();
+        }else{
+            // 需要从最小堆中取出最小值，并放到最大堆中
+            int temp = peekMinHeap();
+            leftHeap[leftSize] = temp;
+            leftSize++;
+            keepMaxHeap();
+        }
+    }
+
+    // 从最小堆中取出堆顶元素
+    private int peekMinHeap(){
+        if(rightSize==0){
+            return -1;
+        }
+        if(rightSize==1){
+            rightSize = 0;
+            return rightHeap[0];
+        }
+        int res = rightHeap[0];
+
+        rightHeap[0] = rightHeap[rightSize-1];
+        rightSize--;
+        int current = 0;
+        int leftChild = leftChildIndex(current);
+        int rightChild = rightChildIndex(current);
+        while(leftChild<rightSize){
+            int min = current;
+            if(rightHeap[leftChild]<rightHeap[min]){
+                min = leftChild;
+            }
+            if(rightChild<rightSize && rightHeap[rightChild]<rightHeap[min]){
+                min = rightChild;
+            }
+            if(min==leftChild){
+                int temp = rightHeap[current];
+                rightHeap[current] = rightHeap[leftChild];
+                rightHeap[leftChild] = temp;
+                current = leftChild;
+            }else if(min==rightChild){
+                int temp = rightHeap[current];
+                rightHeap[current] = rightHeap[rightChild];
+                rightHeap[rightChild] = temp;
+                current = rightChild;
+            }else{
+                break;
+            }
+
+            leftChild = leftChildIndex(current);
+            rightChild = rightChildIndex(current);
+        }
+
+        return res;
+    }
+
+    // 从最大堆中取出顶元素
+    private int peekMaxHeap(){
+        if(leftSize==0){
+            return -1;
+        }
+        if(leftSize==1){
+            leftSize = 0;
+            return leftHeap[0];
+        }
+
+        int res = leftHeap[0];
+        leftHeap[0] = leftHeap[leftSize-1];
+        leftSize--;
+
+        int current = 0;
+        int leftChild = leftChildIndex(current);
+        int rightChild = rightChildIndex(current);
+        while(leftChild<leftSize){
+            int max = current;
+            if(leftHeap[leftChild]>leftHeap[max]){
+                max = leftChild;
+            }
+            if(rightChild<leftSize && leftHeap[rightChild]>leftHeap[max]){
+                max = rightChild;
+            }
+
+            if(max==leftChild){
+                int temp = leftHeap[current];
+                leftHeap[current] = leftHeap[leftChild];
+                leftHeap[leftChild] = temp;
+                current = leftChild;
+            }else if(max==rightChild){
+                int temp = leftHeap[current];
+                leftHeap[current] = leftHeap[rightChild];
+                leftHeap[rightChild] = temp;
+                current = rightChild;
+            }else{
+                break;
+            }
+
+            leftChild = leftChildIndex(current);
+            rightChild = rightChildIndex(current);
+        }
+
+        return res;
+    }
+
+    // 往最小堆中插入元素之后，调整最小堆
+    private void keepMinHeap(){
+        if(rightSize<=1){
+            return;
+        }
+
+        int current = rightSize-1;
+        while(current>0){
+            int parent = parentIndex(current);
+            if(rightHeap[current]<rightHeap[parent]){
+                int temp = rightHeap[current];
+                rightHeap[current] = rightHeap[parent];
+                rightHeap[parent] = temp;
+                current = parent;
+            }else{
+                break;
+            }
+        }
+    }
+
+    // 往最大堆中插入元素之后，调整最大堆
+    private void keepMaxHeap(){
+        if(leftSize<2){
+            return;
+        }
+
+        int current = leftSize - 1;
+        while(current>0){
+            int parent = parentIndex(current);
+            if(leftHeap[current]>leftHeap[parent]){
+                int temp = leftHeap[current];
+                leftHeap[current] = leftHeap[parent];
+                leftHeap[parent] = temp;
+                current = parent;
+            }else{
+                break;
+            }
+        }
+    }
+
+    // 计算堆中某个位置的父节点索引
+    private int parentIndex(int current){
+        return (current-1)/2;
+    }
+
+    private int leftChildIndex(int current){
+        return current*2+1;
+    }
+
+    private int rightChildIndex(int current){
+        return current*2+2;
+    }
+}
+
+```
+
+在 LeetCode 系统中提交的结果为：
+
+```
+执行用时：67 ms, 在所有 Java 提交中击败了99.41%的用户
+内存消耗：50.9 MB, 在所有 Java 提交中击败了81.18%的用户
+```
+
+当数据具有一定规模时，堆的方法明显要比插入排序的方法快很多。
 
 # 42 连续子数组的最大和
 
@@ -3972,6 +4304,295 @@ class Solution {
 执行用时 : 1 ms, 在所有 Java 提交中击败了 97.36% 的用户
 内存消耗 : 42.1 MB, 在所有 Java 提交中击败了 5.40% 的用户
 ```
+
+# 43 1~n整数中1出现的次数
+
+```
+@date: 2020-09-13
+@difficulty: medium
+```
+
+输入一个整数 n ，求1～n这n个整数的十进制表示中1出现的次数。
+
+例如，输入12，1～12这些整数中包含1 的数字有1、10、11和12，1一共出现了5次。
+
+**示例 1**
+
+```
+输入：n = 12
+输出：5
+```
+
+**示例 2**
+
+```
+输入：n = 13
+输出：6
+```
+
+**限制**
+
++ `1 <= n < 2^31`
+
+## 暴力解法
+
+这个题最容易想到的解法就是暴力求解，其实现如下所示
+
+```java
+class Solution {
+    public int countDigitOne(int n) {
+        if(n==0)
+            return 0;
+        int count = 0;
+        for(int i=1; i<=n; i++){
+            int temp = 0;
+            int current = i;
+            while(current>0){
+                if(current%10==1){
+                    temp++;
+                }
+                current /= 10;
+            }
+            count += temp;
+        }
+
+        return count;
+    }
+}
+```
+
+但是提交之后系统显示超出时间限制。
+
+## 根据书中解法写的程序
+
+《剑指offer》书中给出了一种从高位到低位的递归解法。具体的思路是每次删掉最高位。
+
+用Java实现如下，但是在数据比较大的时候会出现不准的情况，可能是发生了溢出之类的事情。
+
+```java
+class Solution {
+    public int countDigitOne(int n){
+        if(n==0){
+            return 0;
+        }
+        if(n<10){
+            return 1;
+        }
+
+        int temp = 1;
+        int m = 0;
+        while(temp<=n){
+            temp *= 10;
+            m++;
+        }
+
+        //m--;
+        int count = 0;
+        temp /= 10;
+        if(n/temp==1){
+            count = n - temp + 1;
+        }else{
+            count = temp;
+        }
+
+        //System.out.println("n="+n+" temp="+temp);
+        count = count + countDigitOne(n-temp*(n/temp)) + n/temp * countDigitOne(temp-1);
+        return count;
+    }
+}
+```
+
+在输入 ``1410065408`` 时输出结果错误，感觉应该是程序里面的 ``temp`` 在计算时溢出了。
+
+## 解决溢出问题
+
+将``temp``改为``long``格式就可以避免这个溢出问题了。具体程序如下：
+
+```java
+class Solution {
+    public int countDigitOne(int n){
+        if(n==0){
+            return 0;
+        }
+        if(n<10){
+            return 1;
+        }
+
+        long n1 = (long) n;
+
+        long temp0 = 1;
+        int m = 0;
+        while(temp0<=n1){
+            temp0 *= 10;
+            m++;
+        }
+
+        //m--;
+        int count = 0;
+        temp0 /= 10;
+        int temp = (int) temp0;
+        if(n/temp==1){
+            count = n - temp + 1;
+        }else{
+            count = temp;
+        }
+
+        //System.out.println("n="+n+" temp="+temp);
+        count = count + countDigitOne(n-temp*(n/temp)) + n/temp * countDigitOne(temp-1);
+        return count;
+    }
+
+}
+```
+
+在 LeetCode 系统中提交的结果为
+
+```
+执行用时：0 ms, 在所有 Java 提交中击败了100.00%的用户
+内存消耗：36.6 MB, 在所有 Java 提交中击败了17.00%的用户
+```
+
+
+
+# 48 最长不含重复字符的子字符串
+
+```
+@date: 2020-09-07
+@difficulty: medium
+```
+
+请从字符串中找出一个最长的不包含重复字符的子字符串，计算该最长子字符串的长度。
+
+**示例 1**
+
+```
+输入: "abcabcbb"
+输出: 3 
+解释: 因为无重复字符的最长子串是 "abc"，所以其长度为 3。
+```
+
+**示例2**
+
+```
+输入: "bbbbb"
+输出: 1
+解释: 因为无重复字符的最长子串是 "b"，所以其长度为 1。
+```
+
+**示例3**
+
+```
+输入: "pwwkew"
+输出: 3
+解释: 因为无重复字符的最长子串是 "wke"，所以其长度为 3。
+     请注意，你的答案必须是 子串 的长度，"pwke" 是一个子序列，不是子串。
+```
+
+**提示**
+
++ s.length <= 40000
+
+## $O(n^2)$的算法
+
+用 $f(i)$ 来表示以第 $i$ 的字符结尾的最长的无重复字符串的长度，则在计算 $f(i+1)$ 只需要从第 $i$ 个字符开始逐个往前比，最多比较 $f(i)$ 次。这种方法最坏的时间复杂复杂度为 $O(n^2)$。下面是具体的Java程序实现：
+
+```java
+class Solution {
+    public int lengthOfLongestSubstring(String s) {
+        if(s.length()<2){
+            return s.length();
+        }
+
+        int n = s.length();
+        char[] characters = s.toCharArray();
+        int[] count = new int[n];
+        count[0] = 1;
+        for(int i=1; i<n; i++){
+            count[i] = 1;
+            for(int j=i-1; i-j<=count[i-1]; j--){
+                if(characters[i]==characters[j]){
+                    break;
+                }
+                count[i]++;
+            }
+        }
+
+        int max = count[0];
+        for(int i=1; i<n; i++){
+            if(count[i]>max){
+                max = count[i];
+            }
+        }
+
+        return max;
+    }
+}
+```
+
+在 LeetCode 系统中提交的结果为
+
+```
+执行用时：9 ms, 在所有 Java 提交中击败了41.57%的用户
+内存消耗：39.6 MB, 在所有 Java 提交中击败了94.31%的用户
+```
+
+## HashMap+DP的做法
+
+用HashMap+DP的做法，可以把时间复杂度降到 $O(n)$。具体的思路是，假设第 $i$ 个字符没有出现过，那么 $f(i)=f(i-1)+1$。如果第 $i$ 个字符出现过，那么我们如果知道它上一次出现的地方，假设它上次在第 $j$ 处出现，那么又可以分为两种情况：
+
++ 如果 $i-j>f(i-1)$， 那么有 $f(i)=f(i-1)+1$
++ 否则，$f(i)=i-j$
+
+而每个字符上次出现的位置可以用 HashMap来记录和更新。下面是具体的Java程序实现
+
+```java
+import java.util.*;
+class Solution {
+    public int lengthOfLongestSubstring(String s) {
+        if(s.length()<2){
+            return s.length();
+        }
+
+        int n = s.length();
+        HashMap<Character, Integer> map = new HashMap<>();
+        char[] characters = s.toCharArray();
+        int[] count = new int[n];
+        count[0] = 1;
+        map.put(characters[0], 0);
+        for(int i=1; i<n; i++){
+            if(map.containsKey(characters[i])){
+                int last = map.get(characters[i]);
+                if(i-last>count[i-1]){
+                    count[i] = count[i-1]+1;
+                }else{
+                    count[i] = i-last;
+                }    
+            }else{
+                count[i] = count[i-1]+1;
+            }
+            map.put(characters[i], i);
+        }
+
+        int max = count[0];
+        for(int i=1; i<n; i++){
+            if(count[i]>max){
+                max = count[i];
+            }
+        }
+
+        return max;
+    }
+}
+```
+
+在 LeetCode 系统中提交的结果为
+
+```
+执行用时：8 ms, 在所有 Java 提交中击败了64.68%的用户
+内存消耗：39.9 MB, 在所有 Java 提交中击败了50.86%的用户
+```
+
+其实，如果知道所有的字符均为26个英文字母的话，大可不必用HashMap，可以用一个数组代替之。
 
 # 49 丑数
 
@@ -4891,6 +5512,166 @@ class Solution {
 从这道题给的限制条件中看到数组可能只含有一个元素，这种情况是没有意义的。我没有想好应该怎么处理，所以就没有处理，从提交结果看也没有这种测试数据。应该是一个纰漏。
 
 另外，这道题的指针移动或许可以用二分法来加速，但是编码会稍微复杂一些。
+
+# 58-I 翻转单词顺序
+
+```
+@date: 2020-09-11
+@difficulty: easy
+```
+
+输入一个英文句子，翻转句子中单词的顺序，但单词内字符的顺序不变。为简单起见，标点符号和普通字母一样处理。例如输入字符串"I am a student. "，则输出"student. a am I"。
+
+**示例1：**
+
+```
+输入: "the sky is blue"
+输出: "blue is sky the"
+```
+
+**示例2：**
+
+```
+输入: "  hello world!  "
+输出: "world! hello"
+解释: 输入字符串可以在前面或者后面包含多余的空格，但是反转后的字符不能包括。
+```
+
+**示例3：**
+
+```
+输入: "a good   example"
+输出: "example good a"
+解释: 如果两个单词间有多余的空格，将反转后单词间的空格减少到只含一个。
+```
+
+**说明：**
+
++ 无空格字符构成一个单词。
++ 输入字符串可以在前面或者后面包含多余的空格，但是反转后的字符不能包括。
++ 如果两个单词间有多余的空格，将反转后单词间的空格减少到只含一个。
+
+## 解法
+
+这道题要注意一些边界情况的处理
+
+```java
+class Solution {
+    public String reverseWords(String s) {
+        int n = s.length();
+        if(n==0){
+            return "";
+        }
+        char[] arrays = s.toCharArray();
+        int left = 0;
+        while(left<n && arrays[left]==' '){
+            left++;
+        }
+
+        if(left==n){
+            return "";
+        }
+
+        //System.out.println("hhh");
+
+        Stack<String> stack = new Stack<>();
+        String str = ""+arrays[left];
+        // System.out.println(str);
+        if(left==n-1){
+            return ""+arrays[left];
+        }
+
+        for(int i=left+1; i<n; i++){
+            if(i==n-1){
+                if(arrays[i]!=' '){
+                    str = str + arrays[i];
+                }
+                stack.push(str);
+                // System.out.println(str);
+                break;
+            }
+            if(arrays[i]==' '){
+                stack.push(str);
+                left = i;
+                while(left<n && arrays[left]==' ')
+                    left++;
+                if(left==n)
+                    break;
+                str = ""+arrays[left];
+                i = left;
+            }else{
+                str = str + arrays[i];
+            }
+        }
+
+        StringBuilder builder = new StringBuilder();
+        while(stack.size()>1){
+            builder.append(stack.pop());
+            builder.append(" ");
+        }
+        if(stack.size()>0)
+            builder.append(stack.pop());
+
+        return builder.toString();
+    }
+}
+```
+
+在 LeetCode 系统中提交的结果为
+
+```
+执行用时：24 ms, 在所有 Java 提交中击败了5.79%的用户
+内存消耗：40.2 MB, 在所有 Java 提交中击败了12.11%的用户
+```
+
+# 58-II 左旋转字符串
+
+```
+@date: 2020-09-11
+@difficulty: easy
+```
+
+字符串的左旋转操作是把字符串前面的若干个字符转移到字符串的尾部。请定义一个函数实现字符串左旋转操作的功能。比如，输入字符串"abcdefg"和数字2，该函数将返回左旋转两位得到的结果"cdefgab"。
+
+ **示例 1**
+
+```
+输入: s = "abcdefg", k = 2
+输出: "cdefgab"
+```
+
+**示例 2**
+
+```
+输入: s = "lrloseumgh", k = 6
+输出: "umghlrlose"
+```
+
+**限制**
+
++ 1 <= k < s.length <= 10000
+
+## 解法
+
+```java
+class Solution {
+    public String reverseLeftWords(String s, int n) {
+        int m = s.length();
+        if(n>=m){
+            return s;
+        }
+
+        return s.substring(n, m)+s.substring(0, n);
+    }
+}
+```
+
+在 LeetCode 系统中提交的结果为
+
+```
+执行用时：0 ms, 在所有 Java 提交中击败了100.00%的用户
+内存消耗：40 MB, 在所有 Java 提交中击败了29.13%的用户
+```
 
 
 
