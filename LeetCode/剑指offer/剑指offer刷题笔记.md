@@ -3960,7 +3960,7 @@ public class MedianFinder {
 
 ## 最大堆，最小堆解法
 
-由于AVL树解法的不现实性，《剑指offer》书中给出了另一种同时使用最大堆和最小堆的方法。这个方法还是颇为巧妙的。让较大的一般放在最大堆中，较小的一半放在最小堆中，这样插入新数字的时间复杂度为$O(longn)$，获取中位数的时间复杂度为$O(1)$。妙呀。
+由于AVL树解法的不现实性，《剑指offer》书中给出了另一种同时使用最大堆和最小堆的方法。这个方法还是颇为巧妙的。让较大的一般放在最大堆中，较小的一半放在最小堆中，这样插入新数字的时间复杂度为$O(logn)$，获取中位数的时间复杂度为$O(1)$。妙呀。
 
 下面是具体的Java程序实现，建议再写的时候把最大堆和最小堆单独拿出来分别作为一个新的类，我这种写法显得类有点大。
 
@@ -4940,7 +4940,7 @@ class Solution {
 内存消耗：39.2 MB, 在所有 Java 提交中击败了98.38%的用户
 ```
 
-# 50 第一次只出现一次的字符
+# 50 第一个只出现一次的字符
 
 在字符串 s 中找出第一个只出现一次的字符。如果没有，返回一个单空格。 s 只包含小写字母。
 
@@ -5671,6 +5671,174 @@ class Solution {
 ```
 执行用时：0 ms, 在所有 Java 提交中击败了100.00%的用户
 内存消耗：40 MB, 在所有 Java 提交中击败了29.13%的用户
+```
+
+# 63 股票的最大利润
+
+假设把某股票的价格按照时间先后顺序存储在数组中，请问买卖该股票一次可能获得的最大利润是多少？
+
+**示例 1:**
+
+```
+输入: [7,1,5,3,6,4]
+输出: 5
+解释: 在第 2 天（股票价格 = 1）的时候买入，在第 5 天（股票价格 = 6）的时候卖出，最大利润 = 6-1 = 5 。
+     注意利润不能是 7-1 = 6, 因为卖出价格需要大于买入价格。
+```
+
+**示例 2:**
+
+```
+输入: [7,6,4,3,1]
+输出: 0
+解释: 在这种情况下, 没有交易完成, 所以最大利润为 0。
+```
+
+**限制：**
+
++ 0 <= 数组长度 <= 10^5
+
+## 动态规划解法
+
+这个问题是一个经典的动态规划例题。无论是用DP还是用分治，一般都是先把数组转化为当天价格相对于前一天的变化值。当用DP时，计算某一天出手能获得的最大利润，最后遍历数组找出获利最大的那一天的利润。总的来说，DP解法时间复杂度是$O(n)$的，下面是Java程序实现。
+
+```java
+class Solution {
+    public int maxProfit(int[] prices) {
+        int n = prices.length;
+        if(n<=1){
+            return 0;
+        }
+
+        boolean good = false;
+        int[] income = new int[n]; // 今天相比昨天的价格变化
+        for(int i=1; i<n; i++){
+            int temp = prices[i] - prices[i-1];
+            income[i] = temp;
+            if(temp>0){
+                good = true;
+            }
+        }
+
+        if(!good){
+            return 0;
+        }
+
+        int[] count = new int[n];  // 该天卖出股票能获得的最大收益
+        for(int i=1; i<n; i++){
+            if(count[i-1]<=0){
+                count[i] = income[i];
+            }else{
+                count[i] = count[i-1] + income[i];
+            }
+        }
+
+        int res = count[0];
+        for(int i=1; i<n; i++){
+            if(count[i]>res){
+                res = count[i];
+            }
+        }
+
+        if(res<0){
+            return 0;
+        }else{
+            return res;
+        }
+    }
+}
+```
+
+在 LeetCode 系统中提交的结果为
+
+```
+执行用时：2 ms, 在所有 Java 提交中击败了71.14%的用户
+内存消耗：38.9 MB, 在所有 Java 提交中击败了29.97%的用户
+```
+
+## 问题扩展——允许买卖多次，且每次卖出需要支付手续费
+
+前几天在面试一家公司时，面试官出了一道这道题的升级版。允许多次买入和卖出股票，且每次卖出需要支付一笔手续费，求最大的收益。
+
+**示例**
+
+```
+输入：prices=[1, 3, 2, 8, 4, 9]  fee=2
+输出：8
+解释：1的时候买入，8的时候卖出，扣除手续费，收益5
+     4的时候买入，9的时候卖出，扣除手续费，收益3
+     所以总收益为8
+```
+
+拿到这道题的时候，第一反应是可以用动态规划解法，但是一时间并没有想出用什么子问题合适。由于面试官只给出了20分钟的时间，并且要求将代码写在纸上，所以在想了2分钟之后，就打算直接用暴力解法。但是，在写完暴力解法之后，可以很清楚地看到算法中存在重复计算一些子问题的情况，因而在最后增加了一个记忆数组。原来效率十分底下的暴力解法就变成了自顶向下的动态规划解法。具体思路如下
+
+如果我们用 $f(i, j)$ 来表示第 $i$ 天到第 $j$ 天的最大收益，那么我们最终要计算的就是 $f(0, n)$ 的值。对于给定的一个 $i$ ，根据第 $i$ 天是否买入股票，可以分为两种情况：
+
++ 如果第 $i$ 天买入股票，后面必定要卖出股票，假设是在第 $k$ 天卖出股票，那么 $f(i, n)=f(i, k)+f(k+1, n)$。
++ 如果第 $i$ 天不买入股票，那么 $f(i, n)=f(i+1, n)$。
+
+$f(i, n)$取以上两种情况的较大者。特别的，如果 $i \geq n$， 那么$f(i, n)=0$。
+
+由此，可以写出以下Java程序，其中记忆数组``array``中的元素存贮的是只考虑从该天到第n天时的最大收益。
+
+```java
+public class HUAWEI {
+
+    public static int[] array;  // 记忆数组
+
+    public static void main(String[] args) {
+        int[] nums = {1, 3, 2, 8, 4, 9};
+        int fee = 2;
+        HUAWEI obj = new HUAWEI();
+        System.out.println(obj.Money(nums, fee));
+    }
+
+    public int Money(int[] nums, int fee){
+        int n = nums.length;
+        if(n<=1){
+            return 0;
+        }
+
+        int[][] count = new int[n][n];
+        array = new int[n];
+        for(int i=0; i<n; i++){
+            array[i] = -1;
+        }
+
+        for(int i=0; i<n; i++){
+            for(int j=i+1; j<n; j++){
+                count[i][j] = nums[j]-nums[i]-fee;
+            }
+        }
+
+        return selectMax(count, 0);
+
+    }
+
+    public int selectMax(int[][] count, int start){
+        int n = count.length;
+        if(start==n-2){
+            return Math.max(0, count[n-2][n-1]);
+        }
+        if(start>n-2){
+            return 0;
+        }
+        if(array[start]!=-1){  // 表示已经计算过了
+            return array[start];
+        }
+
+        int max = 0;
+        for(int i=start+1; i<n; i++){
+            int temp = count[start][i] + selectMax(count, i+1);
+            if(temp>max){
+                max = temp;
+            }
+        }
+
+        array[start] = max;
+        return max;
+    }
+}
 ```
 
 
