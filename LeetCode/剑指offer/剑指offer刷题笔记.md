@@ -4452,6 +4452,233 @@ class Solution {
 内存消耗：36.6 MB, 在所有 Java 提交中击败了17.00%的用户
 ```
 
+# 44 数字序列中某一位的数字
+
+数字以0123456789101112131415…的格式序列化到一个字符序列中。在这个序列中，第5位（从下标0开始计数）是5，第13位是1，第19位是4，等等。
+
+请写一个函数，求任意第n位对应的数字。
+
+**示例 1**
+
+```
+输入：n = 3
+输出：3
+```
+
+**示例2**
+
+```
+输入：n = 11
+输出：0
+```
+
+**限制**
+
++ $0\leq n < 2^{31}$
+
+## 解法
+
+我的基本思路是先算出第 n 位所属的数字有多少位，然后它是这个数字的第几位。
+
+具体的实现有两点需要特别注意一下，一是要防止溢出，二是边界的处理要准确。
+
+```java
+class Solution {
+    public int findNthDigit(int n) {
+        if(n<=9){
+            return n;
+        }
+
+        int length = 2;
+        long start = 10;
+
+        long tempCount = 90;
+        long sum = 9 + tempCount * length;
+        
+        while(sum<=n){
+            length++;
+            start *= 10;
+            tempCount *= 10;
+            sum += (tempCount * length);
+        }
+
+        int last = (int)(n - (sum-tempCount*length));
+        int index = last / length;
+
+        if(last%length==0){
+            int current = (int) (start + index - 1);
+            return current % 10;
+        }else{
+            int current = (int)(start + index);
+            int ptr = last % length;
+            return (current / ((int) Math.pow(10, length-ptr))) % 10;
+        }
+    }
+}
+```
+
+在LeetCode系统中提交的结果为
+
+```
+执行用时：0 ms, 在所有 Java 提交中击败了100.00%的用户
+内存消耗：35.8 MB, 在所有 Java 提交中击败了16.27%的用户
+```
+
+# 45 把数组排成最小的数
+
+```
+@date: 2020-09-24
+@difficulty: medium
+```
+
+输入一个非负整数数组，把数组里所有数字拼接起来排成一个数，打印能拼接出的所有数字中最小的一个。
+
+**示例 1**
+
+```
+输入: [10,2]
+输出: "102"
+```
+
+**示例2**
+
+```
+输入: [3,30,34,5,9]
+输出: "3033459"
+```
+
+**提示**
+
++ `0 < nums.length <= 100`
+
+**说明**
+
+- 输出结果可能非常大，所以你需要返回一个字符串而不是整数
+- 拼接起来的数字可能会有前导 0，最后结果不需要去掉前导 0
+
+## 插入排序解法
+
+可以用插入排序的思路来进行求解。对于某一个数，每步只考虑它与它前面那个数组合起来的结果，如果交换位置后两树组合结果比原来顺序的组合结果小，就交换位置。这样总的时间复杂度为$O(n^2)$
+
+下面是具体的Java程序实现
+
+```java
+class Solution {
+    public String minNumber(int[] nums) {
+        int n = nums.length;
+        if(n==1){
+            return ""+nums[0];
+        }
+
+        int[] level = new int[n];
+        for (int i = 0; i < n; i++) {
+            level[i] = 1;
+            int temp = 10;
+            while(nums[i]>=temp){
+                temp *= 10;
+                level[i]++;
+            }
+        }
+
+        for(int i=0; i<n-1; i++){
+            for(int j=i+1; j>0; j--){
+                double front = nums[j-1] * Math.pow(10, level[j]) + nums[j];
+                double back = nums[j] * Math.pow(10, level[j-1]) + nums[j-1];
+                if(back>=front){
+                    break;
+                }
+                int temp1 = nums[j];
+                nums[j] = nums[j-1];
+                nums[j-1] = temp1;
+                int temp2 = level[j];
+                level[j] = level[j-1];
+                level[j-1] = temp2;
+            }
+        }
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < n; i++) {
+            builder.append(""+nums[i]);
+        }
+
+        return builder.toString();
+    }
+}
+```
+
+在 LeetCode 系统中提交的结果为
+
+```
+执行用时：10 ms, 在所有 Java 提交中击败了24.72%的用户
+内存消耗：38.8 MB, 在所有 Java 提交中击败了19.70%的用户
+```
+
+这道题还有更优秀的$O(n\log n)$解法。
+
+# 46 把数字翻译成字符串
+
+给定一个数字，我们按照如下规则把它翻译为字符串：0 翻译成 “a” ，1 翻译成 “b”，……，11 翻译成 “l”，……，25 翻译成 “z”。一个数字可能有多个翻译。请编程实现一个函数，用来计算一个数字有多少种不同的翻译方法。
+
+**示例1**
+
+```
+输入: 12258
+输出: 5
+解释: 12258有5种不同的翻译，分别是"bccfi", "bwfi", "bczi", "mcfi"和"mzi"
+```
+
+**提示**
+
++ $0\leq num < 2^{31}$
+
+## 第一种解法
+
+一种思路就是可以用动态规划的思路，前 $i$ 位的翻译方法取决于前 $i-1$ 位的翻译方法和前 $i-2$ 位的翻译方法。具体的Java程序实现如下所示
+
+```java
+class Solution {
+    public int translateNum(int num) {
+
+        if(num<10){
+            return 1;
+        }
+        if(num<26){
+            return 2;
+        }
+
+        String str = num+"";
+        int n = str.length();
+        char[] array = str.toCharArray();
+
+        int[] count = new int[n];
+        count[0] = 1;
+        if(array[0]=='1' || array[0]=='2' && array[1]<'6'){
+            count[1] = 2;
+        }else{
+            count[1] = 1;
+        }
+
+        for(int i=2; i<n; i++){
+            if(array[i-1]=='1' || array[i-1]=='2' && array[i]<'6'){
+                count[i] = count[i-1]+count[i-2];
+            }else{
+                count[i] = count[i-1];
+            }
+        }
+
+        return count[n-1];
+    }
+}
+```
+
+在 LeetCode 系统中提交的结果为
+
+```
+执行用时：5 ms, 在所有 Java 提交中击败了9.45%的用户
+内存消耗：35.8 MB, 在所有 Java 提交中击败了9.01%的用户
+```
+
+
+
 
 
 # 48 最长不含重复字符的子字符串
@@ -4993,6 +5220,234 @@ class Solution {
 执行用时：4 ms, 在所有 Java 提交中击败了99.37%的用户
 内存消耗：40.4 MB, 在所有 Java 提交中击败了41.13%的用户
 ```
+
+# 51 数组中的逆序对
+
+在数组中的两个数字，如果前面一个数字大于后面的数字，则这两个数字组成一个逆序对。输入一个数组，求出这个数组中的逆序对的总数。
+
+**示例1**
+
+```
+输入: [7,5,6,4]
+输出: 5
+```
+
+**限制**
+
++ 0 <= 数组长度 <= 50000
+
+## 暴力解法
+
+最简单的暴力解法，时间复杂度为$O(n^2)$，但是在系统中提交显示超时。
+
+```java
+class Solution {
+    public int reversePairs(int[] nums) {
+        int n = nums.length;
+        int count = 0;
+        for(int i=0; i<n-1; i++){
+            for(int j=i+1; j<n; j++){
+                if(nums[i]>nums[j]){
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+}
+```
+
+## 分治解法
+
+用如下分治法，类似于快速排序中的分割，选择一个支点，根据每个元素与支点元素的大小关系分为3个部分。这样时间复杂度已经降到$O(n\log n)$了，但是空间复杂度较高，提交会显示超出内存要求。
+
+```java
+class Solution {
+    public int reversePairs(int[] nums) {
+        int n = nums.length;
+        int count = reversePairs(nums, n);
+        return count;
+    }
+
+    public int reversePairs(int[] nums, int n){
+        if(n<=1){
+            return 0;
+        }
+        if(n==2){
+            if(nums[0]<=nums[1]){
+                return 0;
+            }else{
+                return 1;
+            }
+        }
+
+        int[] small = new int[n];
+        int[] large = new int[n];
+        int ptr1 = 0;
+        int ptr2 = 0;
+        int equal = 0;
+        int count = 0;
+        for(int i=0; i<n-1; i++){
+            if(nums[i]<nums[n-1]){
+                small[ptr1++] = nums[i];
+                count += (ptr2+equal);
+            }else if(nums[i]==nums[n-1]){
+                equal++;
+                count += ptr2;
+            }else{
+                large[ptr2++] = nums[i];
+            }
+        }
+        count += ptr2;
+
+        count = count + reversePairs(small, ptr1) + reversePairs(large, ptr2);
+        return count;
+    }
+}
+```
+
+我在分治之前加了一个统计功能，以减小内存。但是提交显示，时间又超了：
+
+```java
+class Solution {
+    public int reversePairs(int[] nums){
+        int n = nums.length;
+        if(n<=1){
+            return 0;
+        }
+        if(n==2){
+            if(nums[0]<=nums[1]){
+                return 0;
+            }else{
+                return 1;
+            }
+        }
+
+        // 增加一个遍历机制，减小部分内存
+        int n1 = 0;
+        int n2 = 0;
+        for(int i=0; i<n-1; i++){
+            if(nums[i]<nums[n-1]){
+                n1++;
+            }
+            else if(nums[i]>nums[n-1]){
+                n2++;
+            }
+        }
+
+        int[] small = new int[n1];
+        int[] large = new int[n2];
+        int ptr1 = 0;
+        int ptr2 = 0;
+        int equal = 0;
+        int count = 0;
+        for(int i=0; i<n-1; i++){
+            if(nums[i]<nums[n-1]){
+                small[ptr1++] = nums[i];
+                count += (ptr2+equal);
+            }else if(nums[i]==nums[n-1]){
+                equal++;
+                count += ptr2;
+            }else{
+                large[ptr2++] = nums[i];
+            }
+        }
+        count += ptr2;
+
+        count = count + reversePairs(small) + reversePairs(large);
+        return count;
+    }
+}
+```
+
+## 继续对分治进行优化
+
+分治的归并过程不是原址的，需要借助额外的空间，为了避免再次出现内存超出限制的情况，我将额外的空间请求放在了递归之后，这样可以避免在递归栈中存在大量额外空间数组的情况，下面是具体的Java程序实现
+
+```java
+class Solution {
+    public int reversePairs(int[] nums){
+        int n = nums.length;
+        if(n<=1){
+            return 0;
+        }
+        if(n==2){
+            if(nums[0]<=nums[1]){
+                return 0;
+            }else{
+                return 1;
+            }
+        }
+        return reversePairs(nums, 0, n-1);
+        
+    }
+
+    public int reversePairs(int[] nums, int left, int right){
+        if(left==right){
+            return 0;
+        }
+        if(left+1==right){
+            if(nums[left]<=nums[right]){
+                return 0;
+            }else{
+                int temp = nums[left];
+                nums[left] = nums[right];
+                nums[right] = temp;
+                return 1;
+            }
+        }
+
+        int medium = (left+right)/2;
+        int leftRes = reversePairs(nums, left, medium);
+        int rightRes = reversePairs(nums, medium+1, right);
+        int n1 = medium - left+1;
+        int n2 = right - medium;
+        int[] leftNums = new int[n1];
+        int[] rightNums = new int[n2];
+        for(int i=left; i<=medium; i++){
+            leftNums[i-left] = nums[i];
+        }
+        for(int i=medium+1; i<=right; i++){
+            rightNums[i-medium-1] = nums[i];
+        }
+
+        int count = 0;
+        int ptr1 = 0;
+        int ptr2 = 0;
+        int ptr = left;
+        while(ptr1<medium-left+1 && ptr2<right-medium){
+            if(leftNums[ptr1]<=rightNums[ptr2]){
+                nums[ptr++] = leftNums[ptr1++];
+            }else{
+                nums[ptr++] = rightNums[ptr2++];
+                count = count + n1 - ptr1;
+            }
+        }
+        if(ptr1<medium-left+1){
+            while(ptr1<medium-left+1){
+                nums[ptr++] = leftNums[ptr1++];
+            }
+        }
+        if(ptr2<right-medium){
+            while(ptr2<right-medium){
+                nums[ptr++] = rightNums[ptr2++];  // 不用加了
+            }
+        }
+
+        return count + leftRes + rightRes;
+
+    }
+}
+```
+
+这一次提交终于能够通过了
+
+```
+执行用时：46 ms, 在所有 Java 提交中击败了11.01%的用户
+内存消耗：47.8 MB, 在所有 Java 提交中击败了66.37%的用户
+```
+
+
 
 # 53-I 在排序数组中查找数字 I
 
@@ -5673,6 +6128,154 @@ class Solution {
 内存消耗：40 MB, 在所有 Java 提交中击败了29.13%的用户
 ```
 
+# 60 n个骰子的点数
+
+把n个骰子扔在地上，所有骰子朝上一面的点数之和为s。输入n，打印出s的所有可能的值出现的概率。
+
+你需要用一个浮点数数组返回答案，其中第 i 个元素代表这 n 个骰子所能掷出的点数集合中第 i 小的那个的概率。
+
+**示例1：**
+
+```
+输入: 1
+输出: [0.16667,0.16667,0.16667,0.16667,0.16667,0.16667]
+```
+
+**示例2：**
+
+```
+输入: 2
+输出: [0.02778,0.05556,0.08333,0.11111,0.13889,0.16667,0.13889,0.11111,0.08333,0.05556,0.02778]
+```
+
+**限制**
+
++ 1 <= n <= 11
+
+## 解法
+
+投掷n个骰子，总共会有 $ 6^n$ 种可能的排列，而点数只可能是 n 到 6n 之间的整数。因而可以计算出每个整数对应着多少种排列，然后除以$6^n$ 即可。因而，问题的关键就变成了给定一个整数 $x$ 有多少种排列的和为 $x$。我们可以用公式 $f(i, x)$ 来记录投掷 $i$ 个骰子时，和为 $x$ 的排列数。则，根据第 $i$ 个骰子的数值，可以有
+$$
+f(i, x)=f(i-1, x-1)+f(i-1, x-2)+f(i-1, x-3)+f(i-1, x-4)+f(i-1, x-5)+f(i-1, x-6)
+$$
+而当$i$为1时，$f(i, x)=1$。
+
+由此，完整的Java程序解法如下所示，要注意边界的处理。
+
+```java
+class Solution {
+    public double[] twoSum(int n) {
+        double[] res = new double[n*5+1];
+        int[][] count = new int[n+1][6*n+1];
+
+        for(int i=1; i<=6; i++){
+            count[1][i] = 1;
+        }
+
+        for(int i=2; i<=n; i++){
+            for(int j=i; j<=i*6; j++){
+                for(int k=1; k<=6; k++){
+                    if(j-k>=i-1){
+                        count[i][j] += count[i-1][j-k];
+                    }
+                }
+            }
+        }
+
+        double base = Math.pow(6, n);
+        for(int i=n; i<=6*n; i++){
+            res[i-n] = count[n][i]/base;
+        }
+
+        return res;
+    }
+}
+```
+
+在 LeetCode 系统中提交的结果为
+
+```
+执行用时：0 ms, 在所有 Java 提交中击败了100.00%的用户
+内存消耗：37 MB, 在所有 Java 提交中击败了32.99%的用户
+```
+
+# 61 扑克牌中的顺子
+
+从扑克牌中随机抽5张牌，判断是不是一个顺子，即这5张牌是不是连续的。2～10为数字本身，A为1，J为11，Q为12，K为13，而大、小王为 0 ，可以看成任意数字。A 不能视为 14。
+
+**示例1**
+
+```
+输入: [1,2,3,4,5]
+输出: True
+```
+
+**示例2**
+
+```
+输入: [0,0,1,2,5]
+输出: True
+```
+
+**限制**
+
+数组长度为 5 
+
+数组的数取值为 [0, 13] .
+
+## 解法
+
+这道题没什么特殊的解法，先统计一下0的个数，然后判断即可。
+
+```java
+class Solution {
+    public boolean isStraight(int[] nums) {
+        for(int i=0; i<4; i++){
+            for(int j=i+1; j>0; j--){
+                if(nums[j]<nums[j-1]){
+                    int temp = nums[j];
+                    nums[j] = nums[j-1];
+                    nums[j-1] = temp;
+                }
+            }
+        }
+
+        int count = 0;
+
+        for(int i=0; i<5; i++){
+            if(nums[i]==0){
+                count++;
+            }else{
+                break;
+            }
+        }
+
+        for(int i=count; i<4; i++){
+            if(nums[i]==nums[i+1]){
+                return false;
+            }
+            count = count - (nums[i+1]-nums[i]-1);
+        }
+
+        if(count>=0){
+            return true;
+        }else{
+            return false;
+        }
+
+    }
+}
+```
+
+在 LeetCode 系统中提交的结果为
+
+```
+执行用时：1 ms, 在所有 Java 提交中击败了91.27%的用户
+内存消耗：36.6 MB, 在所有 Java 提交中击败了13.43%的用户
+```
+
+
+
 # 63 股票的最大利润
 
 假设把某股票的价格按照时间先后顺序存储在数组中，请问买卖该股票一次可能获得的最大利润是多少？
@@ -5860,8 +6463,6 @@ public class HUAWEI {
 输入: n = 9
 输出: 45
 ```
-
-
 
 **限制：**
 
