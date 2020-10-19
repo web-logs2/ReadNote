@@ -5909,6 +5909,74 @@ class Solution {
 内存消耗：41.6 MB, 在所有 Java 提交中击败了18.97%的用户
 ```
 
+# 56-II 数组中数字出现的次数II
+
+```
+@date: 2020-09-28
+@difficulty: medium
+```
+
+在一个数组 `nums` 中除一个数字只出现一次之外，其他数字都出现了三次。请找出那个只出现一次的数字。
+
+**示例1**
+
+```
+输入：nums = [3,4,3,3]
+输出：4
+```
+
+**示例2**
+
+```
+输入：nums = [9,1,7,9,7,9,7]
+输出：1
+```
+
+**限制**
+
+- `1 <= nums.length <= 10000`
+- `1 <= nums[i] < 2^31`
+
+## 暴力解法
+
+暴力解法代码实现如下
+
+```java
+class Solution {
+    public int singleNumber(int[] nums) {
+        HashMap<Integer, Boolean> map = new HashMap<>();
+        for(int i=0; i<nums.length; i++){
+            if(map.containsKey(nums[i])){
+                map.put(nums[i], false);
+            }else{
+                map.put(nums[i], true);
+            }
+        }
+
+        Set<Integer> set = map.keySet();
+        Iterator<Integer> iter = set.iterator();
+        while(iter.hasNext()){
+            int x = iter.next();
+            if(map.get(x)){
+                return x;
+            }
+        }
+        return -1;
+    }
+}
+```
+
+在LeetCode系统中提交的结果为
+
+```
+执行用时：16 ms, 在所有 Java 提交中击败了40.30%的用户
+内存消耗：40.2 MB, 在所有 Java 提交中击败了10.69%的用户
+```
+
+## 剑指offer书中的解法
+
+《剑指offer》书中给出了一种用二进制位的解法。由于除了要寻找的数之外，其他的数都出现了三次，因而，他们每一位上值为1的个数也必然可被3整除。对3取余即可找出要寻找的数。书中的解法相比于HashMap的解法，最大的优势是节省了大量的空间。
+
 # 57 和为s的两个数字
 
 ```
@@ -6494,6 +6562,293 @@ class Solution {
 ```
 执行用时：0 ms, 在所有 Java 提交中击败了100.00%的用户
 内存消耗：36.6 MB, 在所有 Java 提交中击败了82.52%的用户
+```
+
+# 65 不用加减乘除做加法
+
+写一个函数，求两个整数之和，要求在函数体内不得使用 “+”、“-”、“*”、“/” 四则运算符号。
+
+**示例**
+
+```
+输入: a = 1, b = 1
+输出: 2
+```
+
+**提示**
+
+- `a`, `b` 均可能是负数或 0
+- 结果不会溢出 32 位整数
+
+## 直接调用加法
+
+这道题应该是要借鉴我们在计组中学的加法器的。但是出于好奇，还是直接用Java自己的加法来看下是什么效果。
+
+```java
+class Solution {
+    public int add(int a, int b) {
+        return a+b;
+    }
+}
+```
+
+在LeetCode系统中提交的结果为
+
+```
+执行用时：0 ms, 在所有 Java 提交中击败了100.00%的用户
+内存消耗：35.5 MB, 在所有 Java 提交中击败了68.06%的用户
+```
+
+空间上竟然不是最优的，还是有点意外。
+
+# 66 构建乘积数组
+
+```
+@date: 2020-09-30
+@difficulty: medium
+```
+
+给定一个数组 A[0,1,…,n-1]，请构建一个数组 B[0,1,…,n-1]，其中 B 中的元素 B[i]=A[0]×A[1]×…×A[i-1]×A[i+1]×…×A[n-1]。不能使用除法。
+
+**示例**
+
+```
+输入: [1,2,3,4,5]
+输出: [120,60,40,30,24]
+```
+
+**提示**
+
+- 所有元素乘积之和不会溢出 32 位整数
+- `a.length <= 100000`
+
+## $O(n^2)$的解法
+
+如果能允许使用除法，那么可以很容易地写出时间复杂度为$O(n)$的方法。在不允许使用除法的情况下，首先能够想到的是最简单的时间复杂度为$O(n^2)$的方法，其实现如下所示
+
+```java
+class Solution {
+    public int[] constructArr(int[] a) {
+        int n = a.length;
+        int[] b = new int[n];
+        for(int i=0; i<n; i++){
+            b[i] = 1;
+            for(int j=0; j<n; j++){
+                if(i==j){
+                    continue;
+                }
+                b[i] *= a[j];
+            }
+        }
+        return b;
+    }
+}
+```
+
+但是在系统中提交结果显示超时。
+
+## 记录中间结果
+
+用下面的矩阵可以减少一部分时间开销，需要申请大小为$O(n^2)$的记录数组，并且，因为需要填充这个数组的一半空间，所以时间复杂度仍然是$O(n^2)$的。在系统中提交之后，结果也不太好，显示超出内存限制。
+
+```java
+class Solution {
+    int[][] computered;
+    int[][] count;
+    int n;
+
+    public int[] constructArr(int[] a) {
+        n = a.length;
+        int[] b = new int[n];
+        computered = new int[n][n];
+        count = new int[n][n];
+
+        for(int i=0; i<n; i++){
+            count[i][i] = a[i];
+            computered[i][i] = 1;
+        }
+
+        for(int i=0; i<n; i++){
+            b[i] = region(0, i-1) * region(i+1, n-1); 
+        }
+        return b;
+    }
+
+    private int region(int left, int right){
+        if(right<left){
+            return 1;
+        }
+
+        if(computered[left][right]==1){
+            return count[left][right];
+        }
+
+        int m = (left+right)/2;
+        count[left][right] = region(left, m) * region(m+1, right);
+        computered[left][right] = 1;
+        return count[left][right];
+    }
+}
+```
+
+
+
+
+
+# 67 把字符串转换成整数
+
+```
+@date: 2020-09-27
+@difficulty: medium
+```
+
+写一个函数 StrToInt，实现把字符串转换成整数这个功能。不能使用 atoi 或者其他类似的库函数。
+
+ 
+
+首先，该函数会根据需要丢弃无用的开头空格字符，直到寻找到第一个非空格的字符为止。
+
+当我们寻找到的第一个非空字符为正或者负号时，则将该符号与之后面尽可能多的连续数字组合起来，作为该整数的正负号；假如第一个非空字符是数字，则直接将其与之后连续的数字字符组合起来，形成整数。
+
+该字符串除了有效的整数部分之后也可能会存在多余的字符，这些字符可以被忽略，它们对于函数不应该造成影响。
+
+注意：假如该字符串中的第一个非空格字符不是一个有效整数字符、字符串为空或字符串仅包含空白字符时，则你的函数不需要进行转换。
+
+在任何情况下，若函数不能进行有效的转换时，请返回 0。
+
+**说明：**
+
+假设我们的环境只能存储 32 位大小的有符号整数，那么其数值范围为$ [−2^{31},  2^{31} − 1]$。如果数值超过这个范围，请返回 INT_MAX ($2^{31} − 1$) 或 INT_MIN ($−2^{31}$) 。
+
+**示例1**
+
+```
+输入: "42"
+输出: 42
+```
+
+**示例2**
+
+```
+输入: "   -42"
+输出: -42
+解释: 第一个非空白字符为 '-', 它是一个负号。
+     我们尽可能将负号与后面所有连续出现的数字组合起来，最后得到 -42 。
+```
+
+**示例3**
+
+```
+输入: "4193 with words"
+输出: 4193
+解释: 转换截止于数字 '3' ，因为它的下一个字符不为数字。
+```
+
+**示例4**
+
+```
+输入: "words and 987"
+输出: 0
+解释: 第一个非空字符是 'w', 但它不是数字或正、负号。
+     因此无法执行有效的转换。
+```
+
+**示例5**
+
+```
+输入: "-91283472332"
+输出: -2147483648
+解释: 数字 "-91283472332" 超过 32 位有符号整数范围。 
+     因此返回 INT_MIN (−2^31) 。
+```
+
+## 解法
+
+平平无奇的解法
+
+```java
+class Solution {
+    public int strToInt(String str){
+        int MAX = 214748364;
+        int n = str.length();
+        if(n==0){
+            return 0;
+        }
+
+        char[] array = str.toCharArray();
+        int ptr = 0;
+        while(ptr<n && array[ptr]==' '){
+            ptr++;
+        }
+
+        if(ptr==n){
+            return 0;
+        }
+
+        if(array[ptr]=='+' || array[ptr]=='-'){
+            if(ptr+1==n){
+                return 0;
+            }
+
+            int res = 0;
+            int i = ptr+1;
+            while(i<n && isNumber(array[i])){
+                if(res>MAX){
+                    if(array[ptr]=='+')
+                        return Integer.MAX_VALUE;
+                    else
+                        return Integer.MIN_VALUE;
+                }
+                if(res==MAX){
+                    if(array[ptr]=='+' && array[i]-'0'>=7)
+                        return Integer.MAX_VALUE;
+                    if(array[ptr]=='-' && array[i]-'0'>=8)
+                        return Integer.MIN_VALUE;
+                }
+
+                res *= 10;
+                res += (array[i]-'0');
+                i++;
+            }
+
+            if(array[ptr]=='-'){
+                res *= -1;
+            }
+
+            return res;
+        }
+
+        if(isNumber(array[ptr])){
+            int i = ptr;
+            int res = 0;
+            while(i<n && isNumber(array[i])){
+                if(res>MAX){
+                    return Integer.MAX_VALUE;
+                }
+                if(res==MAX && array[i]-'0'>7){
+                    return Integer.MAX_VALUE;
+                }
+                res *= 10;
+                res += (array[i]-'0');
+                i++;
+            }
+            return res;
+        }
+
+        return 0;
+    }
+
+    public boolean isNumber(char c){
+        return c-'0'<=9 && c-'0'>=0;
+    }
+}
+```
+
+在 LeetCode 系统中提交的结果为
+
+```
+执行用时：3 ms, 在所有 Java 提交中击败了32.04%的用户
+内存消耗：39 MB, 在所有 Java 提交中击败了18.76%的用户
 ```
 
 
