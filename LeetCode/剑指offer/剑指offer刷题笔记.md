@@ -3819,6 +3819,8 @@ public class Codec {
 
 ## 解法
 
+就是每次判断第x位可以是什么字母。
+
 ```java
 class Solution {
     List<String> res = new LinkedList<>();

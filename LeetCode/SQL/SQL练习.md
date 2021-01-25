@@ -2846,6 +2846,104 @@ HAVING COUNT(*) = (
 内存消耗：0B, 在所有 MySQL 提交中击败了100.00%的用户
 ```
 
+### 1077 项目员工III
+
+```
+@date: 2020-11-11
+@difficulty: medium
+```
+
+SQL架构
+
+项目表 `Project`：
+
+```
++-------------+---------+
+| Column Name | Type    |
++-------------+---------+
+| project_id  | int     |
+| employee_id | int     |
++-------------+---------+
+(project_id, employee_id) 是这个表的主键
+employee_id 是员工表 Employee 的外键
+```
+
+员工表 `Employee`：
+
+```
++------------------+---------+
+| Column Name      | Type    |
++------------------+---------+
+| employee_id      | int     |
+| name             | varchar |
+| experience_years | int     |
++------------------+---------+
+employee_id 是这个表的主键
+```
+
+ 
+
+写 一个 SQL 查询语句，报告在每一个项目中经验最丰富的雇员是谁。如果出现经验年数相同的情况，请报告所有具有最大经验年数的员工。
+
+查询结果格式在以下示例中：
+
+```
+Project 表：
++-------------+-------------+
+| project_id  | employee_id |
++-------------+-------------+
+| 1           | 1           |
+| 1           | 2           |
+| 1           | 3           |
+| 2           | 1           |
+| 2           | 4           |
++-------------+-------------+
+
+Employee 表：
++-------------+--------+------------------+
+| employee_id | name   | experience_years |
++-------------+--------+------------------+
+| 1           | Khaled | 3                |
+| 2           | Ali    | 2                |
+| 3           | John   | 3                |
+| 4           | Doe    | 2                |
++-------------+--------+------------------+
+
+Result 表：
++-------------+---------------+
+| project_id  | employee_id   |
++-------------+---------------+
+| 1           | 1             |
+| 1           | 3             |
+| 2           | 1             |
++-------------+---------------+
+employee_id 为 1 和 3 的员工在 project_id 为 1 的项目中拥有最丰富的经验。在 project_id 为 2 的项目中，employee_id 为 1 的员工拥有最丰富的经验。
+```
+
+通过次数3,526 提交次数4,992
+
+#### 解法
+
+先找出每个项目对应的员工的最大经验年限，再用内连接即可
+
+```mysql
+select Project.project_id, Employee.employee_id
+from Project, Employee,
+    (select project_id, max(experience_years) as max_years
+    from Project, Employee
+    where Project.employee_id=Employee.employee_id
+    group by project_id) as C
+where C.project_id=Project.project_id and Project.employee_id=Employee.employee_id and Employee.experience_years=C.max_years;
+```
+
+在LeetCode系统中提交的结果为
+
+```
+执行结果：通过显示详情
+执行用时：407 ms, 在所有 MySQL 提交中击败了83.90%的用户
+内存消耗：0 B, 在所有 MySQL 提交中击败了100.00%的用户
+```
+
 
 
 ### 1082 销售分析 I
@@ -3133,6 +3231,116 @@ where Product.product_id not in (
 ```
 执行用时：853 ms, 在所有 MySQL 提交中击败了70.16%的用户
 内存消耗：0B, 在所有 MySQL 提交中击败了100.00%的用户
+```
+
+### 1098 小众书籍
+
+```
+@date: 2020-11-11
+@difficulty: medium
+```
+
+SQL架构
+
+书籍表 `Books`：
+
+```
++----------------+---------+
+| Column Name    | Type    |
++----------------+---------+
+| book_id        | int     |
+| name           | varchar |
+| available_from | date    |
++----------------+---------+
+book_id 是这个表的主键。
+```
+
+订单表 `Orders`：
+
+```
++----------------+---------+
+| Column Name    | Type    |
++----------------+---------+
+| order_id       | int     |
+| book_id        | int     |
+| quantity       | int     |
+| dispatch_date  | date    |
++----------------+---------+
+order_id 是这个表的主键。
+book_id  是 Books 表的外键。
+```
+
+ 
+
+你需要写一段 SQL 命令，筛选出过去一年中订单总量 **少于10本** 的 **书籍** 。
+
+注意：**不考虑** 上架（available from）距今 **不满一个月** 的书籍。并且 **假设今天是** **2019-06-23** 。
+
+ 
+
+下面是样例输出结果：
+
+```
+Books 表：
++---------+--------------------+----------------+
+| book_id | name               | available_from |
++---------+--------------------+----------------+
+| 1       | "Kalila And Demna" | 2010-01-01     |
+| 2       | "28 Letters"       | 2012-05-12     |
+| 3       | "The Hobbit"       | 2019-06-10     |
+| 4       | "13 Reasons Why"   | 2019-06-01     |
+| 5       | "The Hunger Games" | 2008-09-21     |
++---------+--------------------+----------------+
+
+Orders 表：
++----------+---------+----------+---------------+
+| order_id | book_id | quantity | dispatch_date |
++----------+---------+----------+---------------+
+| 1        | 1       | 2        | 2018-07-26    |
+| 2        | 1       | 1        | 2018-11-05    |
+| 3        | 3       | 8        | 2019-06-11    |
+| 4        | 4       | 6        | 2019-06-05    |
+| 5        | 4       | 5        | 2019-06-20    |
+| 6        | 5       | 9        | 2009-02-02    |
+| 7        | 5       | 8        | 2010-04-13    |
++----------+---------+----------+---------------+
+
+Result 表：
++-----------+--------------------+
+| book_id   | name               |
++-----------+--------------------+
+| 1         | "Kalila And Demna" |
+| 2         | "28 Letters"       |
+| 5         | "The Hunger Games" |
++-----------+--------------------+
+```
+
+通过次数3,366 提交次数7,186
+
+#### 我的解法
+
+这道题需要格外注意的是要认真读题。一年之内销量小于10本的书，而不是总销量小于10本的书。我先对这两个表进行了过滤，但是感觉应该有些索引的特性没有用上，以后再学学，可以再回来重新做一下，性能应该还有提高的地方。当前的解法如下所示
+
+```mysql
+select A.book_id, A.name
+from 
+(select book_id, name
+from Books
+where datediff(available_from, '2019-05-23')<=0) as A left join 
+(select order_id, book_id, quantity
+from Orders
+where datediff(dispatch_date, '2018-06-23')>0) as B 
+on A.book_id=B.book_id
+group by A.book_id
+having sum(B.quantity) is null or sum(B.quantity)<10;
+```
+
+在LeetCode系统中提交的结果为
+
+```
+执行结果：通过显示详情
+执行用时：616 ms, 在所有 MySQL 提交中击败了48.81%的用户
+内存消耗：0 B, 在所有 MySQL 提交中击败了100.00%的用户
 ```
 
 
